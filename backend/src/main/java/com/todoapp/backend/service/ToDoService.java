@@ -4,6 +4,7 @@ import com.todoapp.backend.model.ToDo;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.*;
+@Service
 public class ToDoService {
     private final Map<String, ToDo> todos = new HashMap<>();
 
