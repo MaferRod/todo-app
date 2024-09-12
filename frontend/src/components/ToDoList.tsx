@@ -1,43 +1,47 @@
-import React from 'react';
-import TodoItem from './ToDoItem';
+import React, { useContext } from 'react';
+import { ToDoContext } from '../context/ToDoContext'; // Ensure correct path
+import { ToDo } from '../types/types';
 
-interface Todo {
-    id: number;
-    name: string;
-    priority: 'Low' | 'Medium' | 'High';
-    dueDate: string;
-    completed: boolean;
-}
+const ToDoList: React.FC = () => {
+    const context = useContext(ToDoContext);
 
-interface TodoListProps {
-    todos: Todo[];
-    onEdit: (id: number) => void;
-    onDelete: (id: number) => void;
-}
+    if (!context) {
+        throw new Error('ToDoContext is not available');
+    }
 
-const TodoList: React.FC<TodoListProps> = ({ todos, onEdit, onDelete }) => {
+    const { todos } = context;
+
     return (
-        <table>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Priority</th>
-                    <th>Due Date</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {todos.map(todo => (
-                    <TodoItem 
-                        key={todo.id} 
-                        todo={todo} 
-                        onEdit={onEdit} 
-                        onDelete={onDelete} 
-                    />
-                ))}
-            </tbody>
-        </table>
+        <div>
+            <h1>To Do List</h1>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Text</th>
+                        <th>Due Date</th>
+                        <th>Priority</th>
+                        <th>Done</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {todos.map((todo: ToDo) => (
+                        <tr key={todo.id}>
+                            <td>{todo.id}</td>
+                            <td>{todo.text}</td>
+                            <td>{todo.dueDate ? todo.dueDate.toString() : 'No due date'}</td>
+                            <td>{todo.priority}</td>
+                            <td>{todo.done ? 'Yes' : 'No'}</td>
+                            <td>
+                                {/* Add actions for edit, delete, etc. */}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
     );
 };
 
-export default TodoList;
+export default ToDoList;
