@@ -3,10 +3,10 @@ export type ToDo = {
     id: number;
     text: string;
     priority: 'High' | 'Medium' | 'Low';
-    dueDate: string; // ISO date string or other date format
+    dueDate: string | null; // ISO date string or other date format
     done: boolean;
     creationDate: string; // ISO date string
-    doneDate?: string; // Optional, ISO date string
+    doneDate: string | null; // Updated to accept null
 };
 
 // types.ts (or wherever your type definitions are centralized)

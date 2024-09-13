@@ -14,7 +14,14 @@ const NewToDoModal: React.FC<NewToDoModalProps> = ({ isOpen, onClose, onSave }) 
     const [dueDate, setDueDate] = useState('');
 
     const handleSave = () => {
-        onSave({ text, priority, dueDate, done: false, creationDate: new Date().toISOString() });
+        onSave({ 
+            text, 
+            priority, 
+            dueDate: dueDate || null, // Handle potential empty value
+            done: false, 
+            creationDate: new Date().toISOString(),
+            doneDate: null // Add doneDate with a default value
+        });
         onClose();
     };
 

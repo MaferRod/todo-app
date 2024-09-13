@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
-import { SearchParams } from '../types/types';
 
-interface SearchFiltersProps {
-    onSearch: (params: SearchParams) => void;
-}
+type SearchFiltersProps = {
+    onSearch: (filters: { name?: string; done?: boolean | null; priority?: 'High' | 'Medium' | 'Low' }) => void;
+};
 
 const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch }) => {
     const [name, setName] = useState<string>('');
-    const [done, setDone] = useState<boolean | null>(null); // null for all, true for done, false for undone
-    const [priority, setPriority] = useState<'High' | 'Medium' | 'Low' | undefined>(undefined);
+    const [done, setDone] = useState<boolean | null>(null);
+    const [priority, setPriority] = useState<'High' | 'Medium' | 'Low' | ''>('');
 
     const handleSearch = () => {
-        onSearch({ name, done, priority });
+        onSearch({ name, done, priority: priority || undefined });
     };
 
     return (
@@ -19,25 +18,19 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ onSearch }) => {
             <input 
                 type="text" 
                 placeholder="Search by name" 
-                value={name}
+                value={name} 
                 onChange={(e) => setName(e.target.value)}
             />
-            <select 
-                onChange={(e) => setPriority(e.target.value as 'High' | 'Medium' | 'Low' | undefined)} 
-                value={priority || ''} // Default to empty string if undefined
-            >
-                <option value="">All Priorities</option>
+            <select value={done !== null ? (done ? 'Done' : 'Undone') : ''} onChange={(e) => setDone(e.target.value === 'Done' ? true : e.target.value === 'Undone' ? false : null)}>
+                <option value="">All</option>
+                <option value="Done">Done</option>
+                <option value="Undone">Undone</option>
+            </select>
+            <select value={priority} onChange={(e) => setPriority(e.target.value as 'High' | 'Medium' | 'Low' | '')}>
+                <option value="">All</option>
                 <option value="High">High</option>
                 <option value="Medium">Medium</option>
                 <option value="Low">Low</option>
-            </select>
-            <select 
-                onChange={(e) => setDone(e.target.value === 'true' ? true : e.target.value === 'false' ? false : null)} 
-                value={done === null ? '' : done.toString()}
-            >
-                <option value="">All Statuses</option>
-                <option value="true">Done</option>
-                <option value="false">Undone</option>
             </select>
             <button onClick={handleSearch}>Search</button>
         </div>

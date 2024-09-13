@@ -3,10 +3,9 @@ package com.example.backend;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
-
 import java.util.stream.Collectors;
 
 @Service
@@ -29,7 +28,7 @@ public class ToDoService {
     }
 
     public void createTodo(ToDo todo) {
-        todo.setCreationDate(LocalDate.now());
+        todo.setCreationDate(LocalDateTime.now()); // Use LocalDateTime instead of LocalDate
         repository.save(todo);
     }
 
@@ -45,7 +44,7 @@ public class ToDoService {
         ToDo todo = repository.findById(id).orElseThrow();
         if (!todo.isDone()) {
             todo.setDone(true);
-            todo.setDoneDate(LocalDate.now());
+            todo.setDoneDate(LocalDateTime.now()); // Use LocalDateTime instead of LocalDate
             repository.save(todo);
         }
     }

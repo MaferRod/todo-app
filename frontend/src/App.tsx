@@ -1,70 +1,136 @@
-import React, { useState } from 'react';
-import SearchFilters from './components/SearchFilters';
-import NewToDoModal from './components/NewToDoModal';
-import ToDoTable from './components/ToDoTable';
-import Pagination from './components/Pagination';
-import Metrics from './components/Metrics';
-import { ToDo, SearchParams } from './types/types';
+import React, { useEffect, useState } from 'react';
+import { fetchTodos, createTodo, updateTodo, markAsDone, markAsUndone } from './todoService';
+import { ToDo } from './types/types';
 
 const App: React.FC = () => {
     const [todos, setTodos] = useState<ToDo[]>([]);
-    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-    const [currentPage, setCurrentPage] = useState<number>(1);
-    const [totalPages, setTotalPages] = useState<number>(1);
+    const [newTodoText, setNewTodoText] = useState<string>('');
+    const [newTodoPriority, setNewTodoPriority] = useState<'High' | 'Medium' | 'Low'>('Medium');
+    const [newTodoDueDate, setNewTodoDueDate] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
-    const handleSearch = (filters: SearchParams) => {
-        // Implement search logic here
-        console.log(filters);
-    };
+    useEffect(() => {
+        const loadTodos = async () => {
+            try {
+                const data = await fetchTodos({});
+                setTodos(data);
+            } catch (error) {
+                if (error instanceof Error) {
+                    setError(error.message);
+                } else {
+                    setError('An unknown error occurred');
+                }
+            }
+        };
 
-    const handleSaveTodo = (todoData: Omit<ToDo, 'id'>) => {
+        loadTodos();
+    }, []);
+
+    const handleCreateTodo = async () => {
         const newTodo: ToDo = {
             id: todos.length + 1,
-            ...todoData,
+            text: newTodoText,
             done: false,
             creationDate: new Date().toISOString(),
+            doneDate: null,
+            priority: newTodoPriority,
+            dueDate: newTodoDueDate,
         };
-        setTodos([...todos, newTodo]);
-        setIsModalOpen(false);
+        try {
+            const createdTodo = await createTodo(newTodo);
+            setTodos([...todos, createdTodo]);
+            setNewTodoText('');
+            setNewTodoPriority('Medium');
+            setNewTodoDueDate(null);
+        } catch (error) {
+            if (error instanceof Error) {
+                setError(error.message);
+            } else {
+                setError('An unknown error occurred');
+            }
+        }
     };
-    
 
-    const handleEditTodo = (todo: Omit<ToDo, 'done' | 'creationDate'>) => {
-        const updatedTodos = todos.map(t => (t.id === todo.id ? { ...t, ...todo } : t));
-        setTodos(updatedTodos);
+    const handleUpdateTodo = async (id: number, updatedTodo: ToDo) => {
+        try {
+            const newTodo = await updateTodo(id.toString(), updatedTodo);
+            const updatedTodos = todos.map((todo) => (todo.id === id ? newTodo : todo));
+            setTodos(updatedTodos);
+        } catch (error) {
+            if (error instanceof Error) {
+                setError(error.message);
+            } else {
+                setError('An unknown error occurred');
+            }
+        }
     };
-    
 
-    const handleDeleteTodo = (id: number) => {
-        const updatedTodos = todos.filter(todo => todo.id !== id);
-        setTodos(updatedTodos);
+    const handleMarkAsDone = async (id: number) => {
+        try {
+            await markAsDone(id.toString());
+            const updatedTodos = todos.map((todo) =>
+                todo.id === id ? { ...todo, done: true, doneDate: new Date().toISOString() } : todo
+            );
+            setTodos(updatedTodos);
+        } catch (error) {
+            if (error instanceof Error) {
+                setError(error.message);
+            } else {
+                setError('An unknown error occurred');
+            }
+        }
     };
 
-    const handlePageChange = (page: number) => {
-        setCurrentPage(page);
-        // Optionally fetch new todos for the selected page
+    const handleMarkAsUndone = async (id: number) => {
+        try {
+            await markAsUndone(id.toString());
+            const updatedTodos = todos.map((todo) =>
+                todo.id === id ? { ...todo, done: false, doneDate: null } : todo
+            );
+            setTodos(updatedTodos);
+        } catch (error) {
+            if (error instanceof Error) {
+                setError(error.message);
+            } else {
+                setError('An unknown error occurred');
+            }
+        }
     };
 
     return (
         <div>
-            <SearchFilters onSearch={handleSearch} />
-            <button onClick={() => setIsModalOpen(true)}>New To Do</button>
-            <NewToDoModal 
-                isOpen={isModalOpen} 
-                onClose={() => setIsModalOpen(false)} 
-                onSave={handleSaveTodo} 
+            <h1>ToDo List</h1>
+            {error && <p style={{ color: 'red' }}>{error}</p>}
+            <input
+                type="text"
+                value={newTodoText}
+                onChange={(e) => setNewTodoText(e.target.value)}
+                placeholder="Enter new todo"
             />
-            <Metrics todos={todos} />
-            <ToDoTable 
-                todos={todos} 
-                onEdit={handleEditTodo} 
-                onDelete={handleDeleteTodo} 
+            <select value={newTodoPriority} onChange={(e) => setNewTodoPriority(e.target.value as 'High' | 'Medium' | 'Low')}>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+            </select>
+            <input
+                type="date"
+                value={newTodoDueDate || ''}
+                onChange={(e) => setNewTodoDueDate(e.target.value || null)}
             />
-            <Pagination 
-                currentPage={currentPage} 
-                totalPages={totalPages} 
-                onPageChange={handlePageChange} 
-            />
+            <button onClick={handleCreateTodo}>Add Todo</button>
+            <ul>
+                {todos.length > 0 ? (
+                    todos.map((todo) => (
+                        <li key={todo.id}>
+                            {todo.text} - {todo.done ? 'Done' : 'Pending'}
+                            <button onClick={() => handleMarkAsDone(todo.id)}>Mark as Done</button>
+                            <button onClick={() => handleMarkAsUndone(todo.id)}>Mark as Undone</button>
+                        </li>
+                    ))
+                ) : (
+                    <p>No todos available</p>
+                )}
+            </ul>
         </div>
     );
 };

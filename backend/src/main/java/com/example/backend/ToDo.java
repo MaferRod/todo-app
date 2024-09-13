@@ -1,27 +1,42 @@
 package com.example.backend;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+
 import java.time.LocalDate;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.time.LocalDateTime;
 
+@Entity
 public class ToDo {
-    private static final AtomicInteger idCounter = new AtomicInteger(0);
 
-    private int id; // Unique identifier for the ToDo
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+    
     private String text; // Required, max length 120 chars
+    
     private LocalDate dueDate; // Optional due date
+    
     private boolean done; // Done/undone flag
-    private LocalDate doneDate; // Date when the ToDo is marked as done
+    
+    private LocalDateTime doneDate; // Date when the ToDo is marked as done
+    
     private Priority priority; // Required, can be HIGH, MEDIUM, or LOW
-    private LocalDate creationDate; // Creation date
+    
+    private LocalDateTime creationDate; // Creation date
 
     // Enum for Priority
     public enum Priority {
-        HIGH, MEDIUM, LOW
+        High, Medium, Low
     }
 
-    // Constructor
-    public ToDo(String id, String text, LocalDate dueDate, boolean done, LocalDate doneDate, Priority priority, LocalDate creationDate) {
-        this.id = idCounter.incrementAndGet();
+    // Default constructor
+    public ToDo() {}
+
+    // Parameterized constructor
+    public ToDo(String text, LocalDate dueDate, boolean done, LocalDateTime doneDate, Priority priority, LocalDateTime creationDate) {
         this.text = text;
         this.dueDate = dueDate;
         this.done = done;
@@ -30,13 +45,11 @@ public class ToDo {
         this.creationDate = creationDate;
     }
 
-    // Default constructor
-    public ToDo() {}
-
+    // Getters and setters
     public int getId() {
         return id;
     }
-    
+
     public void setId(int id) {
         this.id = id;
     }
@@ -65,11 +78,11 @@ public class ToDo {
         this.done = done;
     }
 
-    public LocalDate getDoneDate() {
+    public LocalDateTime getDoneDate() {
         return doneDate;
     }
 
-    public void setDoneDate(LocalDate doneDate) {
+    public void setDoneDate(LocalDateTime doneDate) {
         this.doneDate = doneDate;
     }
 
@@ -81,18 +94,18 @@ public class ToDo {
         this.priority = priority;
     }
 
-    public LocalDate getCreationDate() {
+    public LocalDateTime getCreationDate() {
         return creationDate;
     }
 
-    public void setCreationDate(LocalDate creationDate) {
+    public void setCreationDate(LocalDateTime creationDate) {
         this.creationDate = creationDate;
     }
 
     @Override
     public String toString() {
         return "ToDo{" +
-                "id='" + id + '\'' +
+                "id=" + id +
                 ", text='" + text + '\'' +
                 ", dueDate=" + dueDate +
                 ", done=" + done +

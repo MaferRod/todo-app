@@ -1,21 +1,18 @@
 import React, { useState } from 'react';
-
-type Todo = {
-    id: number;
-    text: string;
-    priority: 'High' | 'Medium' | 'Low';
-    dueDate: string; // ISO date string or other date format
-};
+import { ToDo } from '../types/types';
+import EditToDoModal from '../components/EditToDoModal';
 
 type ToDoTableProps = {
-    todos: Todo[];
-    onEdit: (todo: Todo) => void;
+    todos: ToDo[];
+    onEdit: (todo: ToDo) => void;
     onDelete: (id: number) => void;
+    onToggleDone: (id: number) => void;
 };
 
-const ToDoTable: React.FC<ToDoTableProps> = ({ todos, onEdit, onDelete }) => {
+const ToDoTable: React.FC<ToDoTableProps> = ({ todos, onEdit, onDelete, onToggleDone }) => {
     const [sortBy, setSortBy] = useState<'text' | 'priority' | 'dueDate'>('text');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+    const [editingTodo, setEditingTodo] = useState<ToDo | null>(null);
 
     const handleSort = (field: 'text' | 'priority' | 'dueDate') => {
         setSortBy(field);
@@ -23,45 +20,71 @@ const ToDoTable: React.FC<ToDoTableProps> = ({ todos, onEdit, onDelete }) => {
     };
 
     const sortedTodos = [...todos].sort((a, b) => {
-        const aValue = a[sortBy];
-        const bValue = b[sortBy];
+        const aValue = a[sortBy] || '';
+        const bValue = b[sortBy] || '';
+
         if (sortOrder === 'asc') {
-            return aValue > bValue ? 1 : -1;
+            return aValue > bValue ? 1 : (aValue < bValue ? -1 : 0);
         } else {
-            return aValue < bValue ? 1 : -1;
+            return aValue < bValue ? 1 : (aValue > bValue ? -1 : 0);
         }
     });
 
+    const handleEdit = (todo: ToDo) => {
+        setEditingTodo(todo);
+    };
+
+    const handleSave = (todo: ToDo) => {
+        onEdit(todo);
+        setEditingTodo(null);
+    };
+
     return (
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th onClick={() => handleSort('text')}>Text</th>
-                    <th onClick={() => handleSort('priority')}>Priority {sortBy === 'priority' ? (sortOrder === 'asc' ? '↑' : '↓') : ''}</th>
-                    <th onClick={() => handleSort('dueDate')}>Due Date {sortBy === 'dueDate' ? (sortOrder === 'asc' ? '↑' : '↓') : ''}</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {sortedTodos.map(todo => (
-                    <tr key={todo.id} style={{ backgroundColor: getRowColor(todo.dueDate) }}>
-                        <td>{todo.id}</td>
-                        <td>{todo.text}</td>
-                        <td>{todo.priority}</td>
-                        <td>{todo.dueDate}</td>
-                        <td>
-                            <button onClick={() => onEdit(todo)}>Edit</button>
-                            <button onClick={() => onDelete(todo.id)}>Delete</button>
-                        </td>
+        <div>
+            <EditToDoModal 
+                todo={editingTodo} 
+                isOpen={!!editingTodo} 
+                onClose={() => setEditingTodo(null)} 
+                onSave={handleSave} 
+            />
+            <table>
+                <thead>
+                    <tr>
+                        <th>Done</th>
+                        <th>ID</th>
+                        <th onClick={() => handleSort('text')}>Text</th>
+                        <th onClick={() => handleSort('priority')}>Priority {sortBy === 'priority' ? (sortOrder === 'asc' ? '↑' : '↓') : ''}</th>
+                        <th onClick={() => handleSort('dueDate')}>Due Date {sortBy === 'dueDate' ? (sortOrder === 'asc' ? '↑' : '↓') : ''}</th>
+                        <th>Actions</th>
                     </tr>
-                ))}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {sortedTodos.map(todo => (
+                        <tr key={todo.id} style={{ backgroundColor: getRowColor(todo.dueDate) }}>
+                            <td>
+                                <input 
+                                    type="checkbox" 
+                                    checked={todo.done} 
+                                    onChange={() => onToggleDone(todo.id)} 
+                                />
+                            </td>
+                            <td style={{ textDecoration: todo.done ? 'line-through' : 'none' }}>{todo.id}</td>
+                            <td style={{ textDecoration: todo.done ? 'line-through' : 'none' }}>{todo.text}</td>
+                            <td style={{ textDecoration: todo.done ? 'line-through' : 'none' }}>{todo.priority}</td>
+                            <td style={{ textDecoration: todo.done ? 'line-through' : 'none' }}>{todo.dueDate || ''}</td>
+                            <td>
+                                <button onClick={() => handleEdit(todo)}>Edit</button>
+                                <button onClick={() => onDelete(todo.id)}>Delete</button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
     );
 };
 
-const getRowColor = (dueDate: string) => {
+const getRowColor = (dueDate: string | null) => {
     if (!dueDate) return '';
     const dueDateObj = new Date(dueDate);
     const today = new Date();
