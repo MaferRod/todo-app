@@ -1,47 +1,61 @@
-import React, { useContext } from 'react';
-import { ToDoContext } from '../context/ToDoContext'; // Ensure correct path
+import React, { useState } from 'react';
+import { createTodo } from '../api/api';
 import { ToDo } from '../types/types';
 
-const ToDoList: React.FC = () => {
-    const context = useContext(ToDoContext);
+interface NewToDoModalProps {
+    closeModal: () => void;
+}
 
-    if (!context) {
-        throw new Error('ToDoContext is not available');
-    }
+const NewToDoModal: React.FC<NewToDoModalProps> = ({ closeModal }) => {
+    const [text, setText] = useState<string>('');
+    const [priority, setPriority] = useState<ToDo["priority"]>('LOW'); // Use uppercase "LOW"
+    const [dueDate, setDueDate] = useState<string>(''); // New state for due date
 
-    const { todos } = context;
+    const handleSave = () => {
+        const newToDo: Partial<ToDo> = {
+            text,
+            priority, // No need to use `toUpperCase()` anymore
+            done: false,
+            dueDate, // Add due date to the new ToDo object
+        };
+
+        createTodo(newToDo)
+            .then(() => {
+                closeModal(); // Close modal after saving the to-do
+            })
+            .catch(error => {
+                console.error('Error creating To Do:', error.response ? error.response.data : error.message);
+            });
+    };
 
     return (
-        <div>
-            <h1>To Do List</h1>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Text</th>
-                        <th>Due Date</th>
-                        <th>Priority</th>
-                        <th>Done</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {todos.map((todo: ToDo) => (
-                        <tr key={todo.id}>
-                            <td>{todo.id}</td>
-                            <td>{todo.text}</td>
-                            <td>{todo.dueDate ? todo.dueDate.toString() : 'No due date'}</td>
-                            <td>{todo.priority}</td>
-                            <td>{todo.done ? 'Yes' : 'No'}</td>
-                            <td>
-                                {/* Add actions for edit, delete, etc. */}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+        <div className="modal">
+            <div className="modal-content">
+                <h2>New To Do</h2>
+                <input
+                    type="text"
+                    placeholder="To Do Text"
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                />
+                <select value={priority} onChange={(e) => setPriority(e.target.value as ToDo["priority"])}>
+                    <option value="HIGH">High</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="LOW">Low</option>
+                </select>
+
+                {/* Due Date Input */}
+                <input
+                    type="date"
+                    value={dueDate}
+                    onChange={(e) => setDueDate(e.target.value)} // Capture the due date
+                />
+
+                <button onClick={handleSave}>Save</button>
+                <button onClick={closeModal}>Cancel</button>
+            </div>
         </div>
     );
 };
 
-export default ToDoList;
+export default NewToDoModal;

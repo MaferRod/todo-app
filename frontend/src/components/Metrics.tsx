@@ -1,20 +1,16 @@
-// src/components/Metrics.tsx
-import React from 'react';
-import { ToDo } from '../types/types';
+// components/Metrics.tsx
+import React from "react";
 
-type MetricsProps = {
-  todos: ToDo[];
-};
-
-const Metrics: React.FC<MetricsProps> = ({ todos }) => {
-  const totalTodos = todos.length;
-  const completedTodos = todos.filter(todo => todo.done).length;
-
+const Metrics: React.FC = () => {
   return (
-    <div>
-      <p>Total To Dos: {totalTodos}</p>
-      <p>Completed To Dos: {completedTodos}</p>
-      <p>Pending To Dos: {totalTodos - completedTodos}</p>
+    <div className="metrics">
+      <div>Average time to finish tasks: <strong>22:15 minutes</strong></div>
+      <div>Average time to finish tasks by priority:</div>
+      <ul>
+        <li>Low: 10:25 mins</li>
+        <li>Medium: 10:25 mins</li>
+        <li>High: 10:25 mins</li>
+      </ul>
     </div>
   );
 };

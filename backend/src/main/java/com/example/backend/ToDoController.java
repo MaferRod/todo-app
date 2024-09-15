@@ -1,54 +1,65 @@
 package com.example.backend;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Optional;
 
+@CrossOrigin(origins = "http://localhost:8080")
 @RestController
 @RequestMapping("/todos")
-@CrossOrigin(origins = "http://localhost:8080") // Allow requests from this origin
 public class ToDoController {
 
-    private final ToDoService service;
-
     @Autowired
-    public ToDoController(ToDoService service) {
-        this.service = service;
-    }
+    private ToDoService toDoService;
 
     @GetMapping
-    public List<ToDo> getTodos(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) Boolean done,
-            @RequestParam(required = false) ToDo.Priority priority,
-            @RequestParam(required = false) String sortBy) {
-        return service.getTodos(name, done, priority, sortBy);
+public Page<ToDo> getAllToDos(
+    @RequestParam(defaultValue = "0") int page,
+    @RequestParam(defaultValue = "10") int size,
+    @RequestParam(required = false) String text,
+    @RequestParam(required = false) ToDo.Priority priority,
+    @RequestParam(required = false) Boolean done
+) {
+    Pageable pageable = PageRequest.of(page, size);
+    return toDoService.getAllToDos(text, priority, done, pageable);
+}
+
+
+
+    @GetMapping("/{id}")
+    public Optional<ToDo> getToDoById(@PathVariable Long id) {
+        return toDoService.getToDoById(id);
     }
 
     @PostMapping
-    public ResponseEntity<ToDo> createTodo(@RequestBody ToDo todo) {
-        service.createTodo(todo);
-        return new ResponseEntity<>(todo, HttpStatus.CREATED);
+    public ToDo createToDo(@RequestBody ToDo toDo) {
+        return toDoService.createOrUpdateToDo(toDo);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ToDo> updateTodo(@PathVariable int id, @RequestBody ToDo updatedTodo) {
-        service.updateTodo(id, updatedTodo);
-        return ResponseEntity.ok(updatedTodo);
+    public ToDo updateToDo(@PathVariable Long id, @RequestBody ToDo toDo) {
+        toDo.setId(id);
+        return toDoService.createOrUpdateToDo(toDo);
     }
 
+    @DeleteMapping("/{id}")
+public ResponseEntity<Void> deleteToDoById(@PathVariable Long id) {
+    toDoService.deleteToDoById(id);
+    return ResponseEntity.noContent().build(); // Return 204 No Content
+}
+
     @PostMapping("/{id}/done")
-    public ResponseEntity<Void> markAsDone(@PathVariable int id) {
-        service.markAsDone(id);
-        return ResponseEntity.noContent().build();
+    public ToDo markAsDone(@PathVariable Long id) {
+        return toDoService.markAsDone(id);
     }
 
     @PutMapping("/{id}/undone")
-    public ResponseEntity<Void> markAsUndone(@PathVariable int id) {
-        service.markAsUndone(id);
-        return ResponseEntity.noContent().build();
+    public ToDo markAsUndone(@PathVariable Long id) {
+        return toDoService.markAsUndone(id);
     }
 }

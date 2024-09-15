@@ -1,13 +1,25 @@
 package com.example.backend;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.Optional;
 
 public interface ToDoRepository {
-    // CRUD operations
-    void save(ToDo todo);
-    Optional<ToDo> findById(int id);
-    List<ToDo> findAll();
-    void deleteById(int id);
-    void deleteAll();
+    Page<ToDo> findAll(Pageable pageable);
+
+    Optional<ToDo> findById(Long id);
+
+    ToDo save(ToDo toDo);
+
+    void deleteById(Long id);
+
+    Page<ToDo> findByTextContainingIgnoreCase(String text, Pageable pageable);
+
+    Page<ToDo> findByDone(boolean done, Pageable pageable);
+
+    Page<ToDo> findByPriority(ToDo.Priority priority, Pageable pageable);
+
+    long count();
+
+    boolean existsById(Long id);
 }

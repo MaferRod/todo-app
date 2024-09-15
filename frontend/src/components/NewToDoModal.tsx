@@ -1,52 +1,54 @@
+// NewToDoModal.tsx
 import React, { useState } from 'react';
-import Modal from 'react-modal';
 import { ToDo } from '../types/types';
+import { createTodo } from '../api/api';
 
-type NewToDoModalProps = {
-    isOpen: boolean;
-    onClose: () => void;
-    onSave: (todo: Omit<ToDo, 'id'>) => void; // omit 'id' since it's not set at creation
-};
+interface NewToDoModalProps {
+    closeModal: () => void;
+    onSave: (todo: ToDo) => void;
+}
 
-const NewToDoModal: React.FC<NewToDoModalProps> = ({ isOpen, onClose, onSave }) => {
+const NewToDoModal: React.FC<NewToDoModalProps> = ({ closeModal, onSave }) => {
     const [text, setText] = useState('');
-    const [priority, setPriority] = useState<"High" | "Medium" | "Low">('Medium');
-    const [dueDate, setDueDate] = useState('');
+    const [priority, setPriority] = useState<ToDo['priority']>('LOW');
+    const [dueDate, setDueDate] = useState<string>('');
 
     const handleSave = () => {
-        onSave({ 
-            text, 
-            priority, 
-            dueDate: dueDate || null, // Handle potential empty value
-            done: false, 
-            creationDate: new Date().toISOString(),
-            doneDate: null // Add doneDate with a default value
-        });
-        onClose();
+        const newToDo = {
+            text,
+            priority,
+            done: false,
+            dueDate,
+        };
+
+        createTodo(newToDo)
+            .then((response) => {
+                onSave(response.data); // Pass the new todo to the parent
+                closeModal(); // Close the modal
+            })
+            .catch((error) => {
+                console.error('Error creating To Do:', error.response ? error.response.data : error.message);
+            });
     };
 
     return (
-        <Modal isOpen={isOpen} onRequestClose={onClose}>
-            <h2>Create New To Do</h2>
-            <input 
-                type="text" 
-                placeholder="To Do Text" 
-                value={text} 
-                onChange={(e) => setText(e.target.value)}
-            />
-            <select value={priority} onChange={(e) => setPriority(e.target.value as "High" | "Medium" | "Low")}>
-                <option value="High">High</option>
-                <option value="Medium">Medium</option>
-                <option value="Low">Low</option>
-            </select>
-            <input 
-                type="date" 
-                value={dueDate} 
-                onChange={(e) => setDueDate(e.target.value)}
-            />
-            <button onClick={handleSave}>Save</button>
-            <button onClick={onClose}>Cancel</button>
-        </Modal>
+        <div className="modal">
+            <div className="modal-content">
+                <h3>New To Do</h3>
+                <label>Text</label>
+                <input type="text" value={text} onChange={(e) => setText(e.target.value)} />
+                <label>Priority</label>
+                <select value={priority} onChange={(e) => setPriority(e.target.value as ToDo['priority'])}>
+                    <option value="HIGH">High</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="LOW">Low</option>
+                </select>
+                <label>Due Date</label>
+                <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+                <button onClick={handleSave}>Save</button>
+                <button onClick={closeModal}>Cancel</button>
+            </div>
+        </div>
     );
 };
 

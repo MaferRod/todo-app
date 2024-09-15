@@ -1,41 +1,88 @@
 package com.example.backend;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
-@Repository
+@Repository // Mark this as a Spring bean
 public class InMemoryToDoRepository implements ToDoRepository {
 
-    private final Map<Integer, ToDo> storage = new ConcurrentHashMap<>();
-    private int currentId = 1; // Initialize ID counter
+    private Map<Long, ToDo> todoMap = new HashMap<>();
+    private long idCounter = 1L;
 
     @Override
-    public void save(ToDo todo) {
-        if (todo.getId() == 0) { // If ID is 0, it means it's a new todo
-            todo.setId(currentId++);
+    public Page<ToDo> findAll(Pageable pageable) {
+        // Convert map values to list and return paginated result
+        List<ToDo> todos = new ArrayList<>(todoMap.values());
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), todos.size());
+        return new PageImpl<>(todos.subList(start, end), pageable, todos.size());
+    }
+
+    @Override
+    public Optional<ToDo> findById(Long id) {
+        return Optional.ofNullable(todoMap.get(id));
+    }
+
+    @Override
+    public ToDo save(ToDo toDo) {
+        if (toDo.getId() == null) {
+            toDo.setId(idCounter++);
         }
-        storage.put(todo.getId(), todo);
+        todoMap.put(toDo.getId(), toDo);
+        return toDo;
     }
 
     @Override
-    public Optional<ToDo> findById(int id) {
-        return Optional.ofNullable(storage.get(id));
+    public void deleteById(Long id) {
+        todoMap.remove(id);
     }
 
     @Override
-    public List<ToDo> findAll() {
-        return new ArrayList<>(storage.values());
+    public Page<ToDo> findByTextContainingIgnoreCase(String text, Pageable pageable) {
+        List<ToDo> filteredTodos = todoMap.values().stream()
+                .filter(todo -> todo.getText().toLowerCase().contains(text.toLowerCase()))
+                .collect(Collectors.toList());
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), filteredTodos.size());
+        return new PageImpl<>(filteredTodos.subList(start, end), pageable, filteredTodos.size());
     }
 
     @Override
-    public void deleteById(int id) {
-        storage.remove(id);
+    public Page<ToDo> findByDone(boolean done, Pageable pageable) {
+        List<ToDo> filteredTodos = todoMap.values().stream()
+                .filter(todo -> todo.getDone() == done)
+                .collect(Collectors.toList());
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), filteredTodos.size());
+        return new PageImpl<>(filteredTodos.subList(start, end), pageable, filteredTodos.size());
     }
 
     @Override
-    public void deleteAll() {
-        storage.clear();
+    public Page<ToDo> findByPriority(ToDo.Priority priority, Pageable pageable) {
+        List<ToDo> filteredTodos = todoMap.values().stream()
+                .filter(todo -> todo.getPriority() == priority)
+                .collect(Collectors.toList());
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), filteredTodos.size());
+        return new PageImpl<>(filteredTodos.subList(start, end), pageable, filteredTodos.size());
+    }
+
+    @Override
+    public boolean existsById(Long id) {
+        return todoMap.containsKey(id);
+    }
+
+    @Override
+    public long count() {
+        return todoMap.size();
     }
 }

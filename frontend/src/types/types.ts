@@ -1,13 +1,15 @@
-// types/types.ts
-export type ToDo = {
-    id: number;
+// src/types/types.ts
+export interface ToDo {
+    id?: number;
     text: string;
-    priority: 'High' | 'Medium' | 'Low';
-    dueDate: string | null; // ISO date string or other date format
+    priority: 'HIGH' | 'MEDIUM' | 'LOW'; // Use uppercase values to match the backend
     done: boolean;
-    creationDate: string; // ISO date string
-    doneDate: string | null; // Updated to accept null
-};
+    doneDate?: string;
+    dueDate?: string;
+    creationDate?: string;
+}
+
+
 
 // types.ts (or wherever your type definitions are centralized)
 
@@ -19,3 +21,4 @@ export type SearchParams = {
 
 
 export type Todo = Omit<ToDo, 'done' | 'creationDate' | 'doneDate'>;
+export const BACKEND_URL = 'http://localhost:9090';

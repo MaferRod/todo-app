@@ -1,56 +1,43 @@
 package com.example.backend;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
 public class ToDo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-    
-    private String text; // Required, max length 120 chars
-    
-    private LocalDate dueDate; // Optional due date
-    
-    private boolean done; // Done/undone flag
-    
-    private LocalDateTime doneDate; // Date when the ToDo is marked as done
-    
-    private Priority priority; // Required, can be HIGH, MEDIUM, or LOW
-    
-    private LocalDateTime creationDate; // Creation date
+    private Long id;
 
-    // Enum for Priority
-    public enum Priority {
-        High, Medium, Low
-    }
+    @Column(nullable = false, length = 120)
+    @Size(max = 120)
+    @NotBlank
+    private String text;
 
-    // Default constructor
-    public ToDo() {}
+    private LocalDate dueDate;
+    
+    @Column(nullable = false)
+    private Boolean done = false;
 
-    // Parameterized constructor
-    public ToDo(String text, LocalDate dueDate, boolean done, LocalDateTime doneDate, Priority priority, LocalDateTime creationDate) {
-        this.text = text;
-        this.dueDate = dueDate;
-        this.done = done;
-        this.doneDate = doneDate;
-        this.priority = priority;
-        this.creationDate = creationDate;
-    }
+    private LocalDate doneDate;
 
-    // Getters and setters
-    public int getId() {
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Priority priority;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDate creationDate = LocalDate.now();
+
+    // Getters and Setters
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -70,19 +57,19 @@ public class ToDo {
         this.dueDate = dueDate;
     }
 
-    public boolean isDone() {
+    public Boolean getDone() {
         return done;
     }
 
-    public void setDone(boolean done) {
+    public void setDone(Boolean done) {
         this.done = done;
     }
 
-    public LocalDateTime getDoneDate() {
+    public LocalDate getDoneDate() {
         return doneDate;
     }
 
-    public void setDoneDate(LocalDateTime doneDate) {
+    public void setDoneDate(LocalDate doneDate) {
         this.doneDate = doneDate;
     }
 
@@ -94,24 +81,16 @@ public class ToDo {
         this.priority = priority;
     }
 
-    public LocalDateTime getCreationDate() {
+    public LocalDate getCreationDate() {
         return creationDate;
     }
 
-    public void setCreationDate(LocalDateTime creationDate) {
+    public void setCreationDate(LocalDate creationDate) {
         this.creationDate = creationDate;
     }
 
-    @Override
-    public String toString() {
-        return "ToDo{" +
-                "id=" + id +
-                ", text='" + text + '\'' +
-                ", dueDate=" + dueDate +
-                ", done=" + done +
-                ", doneDate=" + doneDate +
-                ", priority=" + priority +
-                ", creationDate=" + creationDate +
-                '}';
+    // Priority Enum
+    public enum Priority {
+        HIGH, MEDIUM, LOW
     }
 }

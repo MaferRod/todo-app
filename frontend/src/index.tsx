@@ -4,6 +4,8 @@ import { createRoot } from 'react-dom/client'; // Import createRoot from react-d
 import App from './App';
 import Modal from 'react-modal';
 
+
+
 // Set the app element for React Modal
 Modal.setAppElement('#root');
 

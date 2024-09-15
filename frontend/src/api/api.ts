@@ -1,24 +1,32 @@
-import axios from 'axios';
-import { ToDo } from '../types/types';
+// api/api.ts
+import axiosInstance from './axiosInstance';
+import { ToDo } from '../types/types'; // Assuming you have a ToDo type defined somewhere
 
-const API_URL = 'http://localhost:9090/todos';
-
+// Get all todos, with optional filtering
 export const getTodos = (params: any) => {
-    return axios.get<ToDo[]>(API_URL, { params });
+    return axiosInstance.get<ToDo[]>('/todos', { params });
 };
 
+// Create a new todo
 export const createTodo = (todo: Partial<ToDo>) => {
-    return axios.post(API_URL, todo);
+    return axiosInstance.post('/todos', todo);
 };
 
-export const updateTodo = (id: string, todo: Partial<ToDo>) => {
-    return axios.put(`${API_URL}/${id}`, todo);
+// Update an existing todo
+export const updateTodo = (id: number, todo: Partial<ToDo>) => {
+    return axiosInstance.put(`/todos/${id}`, todo);
 };
 
-export const markAsDone = (id: string) => {
-    return axios.post(`${API_URL}/${id}/done`);
+// Mark a todo as done
+export const markAsDone = (id: number) => {
+    return axiosInstance.post(`/todos/${id}/done`);
 };
 
-export const markAsUndone = (id: string) => {
-    return axios.put(`${API_URL}/${id}/undone`);
+// Mark a todo as undone
+export const markAsUndone = (id: number) => {
+    return axiosInstance.put(`/todos/${id}/undone`);
+};
+// Delete a todo by ID
+export const deleteTodo = (id: number) => {
+    return axiosInstance.delete(`/todos/${id}`);
 };
