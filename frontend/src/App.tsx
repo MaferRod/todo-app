@@ -11,23 +11,34 @@ const App: React.FC = () => {
     const [isModalOpen, setModalOpen] = useState(false);
     const [filters, setFilters] = useState({ text: '', priority: '', done: '' });
     const [metrics, setMetrics] = useState<any>(null);
+    // Define the sort state here
+    const [sort, setSort] = useState<{ sortBy: string; order: string }>({
+        sortBy: 'priority', // Default sort field
+        order: 'asc',        // Default sort order
+    });
 
     // Fetch todos and metrics whenever filters or todos are updated
     useEffect(() => {
         fetchTodos();
         fetchMetrics();  // Fetch metrics when component mounts
-    }, []);
+    }, [filters, sort]); // Make sure to include `sort` in dependencies
 
     const fetchTodos = () => {
-        axios.get('http://localhost:9090/todos')
+        const params = {
+            text: filters.text || '',           // Task name filter
+            priority: filters.priority || '',   // Priority filter
+            done: filters.done !== '' ? filters.done : ''  // Done/Undone filter
+        };
+    
+        axios.get('http://localhost:9090/todos', { params })
             .then(response => {
-                setTodos(response.data.content || []);
+                setTodos(response.data.content || []);  // Handle pagination data
             })
             .catch(error => {
                 console.error('Error fetching todos:', error);
             });
     };
-
+    
     const fetchMetrics = () => {
         axios.get('http://localhost:9090/todos/metrics')
             .then(response => {
@@ -37,6 +48,7 @@ const App: React.FC = () => {
                 console.error('Error fetching metrics:', error);
             });
     };
+
 
     const handleAddToDo = (newToDo: ToDo) => {
         setTodos((prevTodos) => [...prevTodos, newToDo]);
@@ -53,13 +65,17 @@ const App: React.FC = () => {
     };
 
     const handleFilterChange = (newFilters: { text: string; priority: string; done: string }) => {
-        setFilters(newFilters); // Apply filters and trigger fetch
+        setFilters(newFilters); // Apply filters and trigger a new fetch
+        fetchTodos();  // Fetch todos with the new filters
+    };
+    const handleClearFilters = () => {
+        setFilters({ text: '', priority: '', done: '' }); // Reset the filters
     };
 
     return (
         <div>
             <h1>To Do List</h1>
-            <ToDoFilter onFilterChange={handleFilterChange} />
+            <ToDoFilter onFilterChange={handleFilterChange} onClearFilters={handleClearFilters} /> {/* Pass the clear function */}
             <button onClick={() => setModalOpen(true)}>+ New To Do</button>
             {isModalOpen && (
                 <NewToDoModal

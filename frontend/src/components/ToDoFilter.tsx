@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 
 interface ToDoFilterProps {
     onFilterChange: (filters: { text: string; priority: string; done: string }) => void;
+    onClearFilters: () => void; // Add a prop for clearing filters
 }
 
-const ToDoFilter: React.FC<ToDoFilterProps> = ({ onFilterChange }) => {
+const ToDoFilter: React.FC<ToDoFilterProps> = ({ onFilterChange, onClearFilters }) => {
     const [text, setText] = useState('');
     const [priority, setPriority] = useState('');
     const [done, setDone] = useState('');
@@ -12,7 +13,12 @@ const ToDoFilter: React.FC<ToDoFilterProps> = ({ onFilterChange }) => {
     const handleSearch = () => {
         onFilterChange({ text, priority, done });
     };
-
+    const handleClearFilters = () => {
+        setText('');
+        setPriority('');
+        setDone('');
+        onClearFilters(); // Trigger the parent function to clear filters
+    };
     return (
         <div>
             <input
@@ -33,6 +39,7 @@ const ToDoFilter: React.FC<ToDoFilterProps> = ({ onFilterChange }) => {
                 <option value="false">Undone</option>
             </select>
             <button onClick={handleSearch}>Search</button>
+            <button onClick={handleClearFilters}>Clear Filters</button> {/* New Clear Filters button */}
         </div>
     );
 };

@@ -61,6 +61,35 @@ public class InMemoryToDoRepository implements ToDoRepository {
     }
 
     @Override
+public Page<ToDo> findByTextAndPriorityAndDone(String text, ToDo.Priority priority, Boolean done, Pageable pageable) {
+    List<ToDo> filteredToDos = todoMap.values().stream()
+        .filter(toDo -> toDo.getText().toLowerCase().contains(text.toLowerCase())
+                     && toDo.getPriority() == priority
+                     && toDo.getDone().equals(done))
+        .collect(Collectors.toList());
+
+    return getPageFromList(filteredToDos, pageable);
+}
+@Override
+public Page<ToDo> findByTextAndPriority(String text, ToDo.Priority priority, Pageable pageable) {
+    List<ToDo> filteredToDos = todoMap.values().stream()
+        .filter(toDo -> toDo.getText().toLowerCase().contains(text.toLowerCase())
+                     && toDo.getPriority() == priority)
+        .collect(Collectors.toList());
+
+    return getPageFromList(filteredToDos, pageable);
+}
+@Override
+public Page<ToDo> findByTextAndDone(String text, Boolean done, Pageable pageable) {
+    List<ToDo> filteredToDos = todoMap.values().stream()
+        .filter(toDo -> toDo.getText().toLowerCase().contains(text.toLowerCase())
+                     && toDo.getDone().equals(done))
+        .collect(Collectors.toList());
+
+    return getPageFromList(filteredToDos, pageable);
+}
+
+    @Override
     public Page<ToDo> findByDone(boolean done, Pageable pageable) {
         List<ToDo> filteredTodos = todoMap.values().stream()
                 .filter(todo -> todo.getDone() == done)
@@ -89,4 +118,23 @@ public class InMemoryToDoRepository implements ToDoRepository {
     public long count() {
         return todoMap.size();
     }
+
+    @Override
+public Page<ToDo> findByPriorityAndDone(ToDo.Priority priority, Boolean done, Pageable pageable) {
+    List<ToDo> filteredToDos = todoMap.values().stream()
+        .filter(toDo -> toDo.getPriority() == priority && toDo.getDone().equals(done))
+        .collect(Collectors.toList());
+
+    return getPageFromList(filteredToDos, pageable);  // Paginate the filtered list
+}
+
+// Helper method to paginate a list
+private Page<ToDo> getPageFromList(List<ToDo> list, Pageable pageable) {
+    int start = (int) pageable.getOffset();
+    int end = Math.min((start + pageable.getPageSize()), list.size());
+    return new PageImpl<>(list.subList(start, end), pageable, list.size());
+}
+
+
+
 }

@@ -19,7 +19,15 @@ public class ToDoService {
     private ToDoRepository toDoRepository;
 
     public Page<ToDo> getAllToDos(String text, ToDo.Priority priority, Boolean done, Pageable pageable) {
-        if (text != null && !text.isEmpty()) {
+        if (text != null && !text.isEmpty() && priority != null && done != null) {
+            return toDoRepository.findByTextAndPriorityAndDone(text, priority, done, pageable);
+        } else if (priority != null && done != null) {
+            return toDoRepository.findByPriorityAndDone(priority, done, pageable);
+        } else if (text != null && !text.isEmpty() && priority != null) {
+            return toDoRepository.findByTextAndPriority(text, priority, pageable);
+        } else if (text != null && !text.isEmpty() && done != null) {
+            return toDoRepository.findByTextAndDone(text, done, pageable);
+        } else if (text != null && !text.isEmpty()) {
             return toDoRepository.findByTextContainingIgnoreCase(text, pageable);
         } else if (priority != null) {
             return toDoRepository.findByPriority(priority, pageable);
@@ -29,6 +37,8 @@ public class ToDoService {
             return toDoRepository.findAll(pageable);
         }
     }
+    
+    
     
 
 

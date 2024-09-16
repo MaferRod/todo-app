@@ -28,10 +28,9 @@ public Page<ToDo> getAllToDos(
     @RequestParam(required = false) String order
 ) {
     Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(order != null ? order : "asc"), sortBy != null ? sortBy : "id"));
-
-    // Fetch the filtered todos using the service
-    return toDoService.getAllToDos(text, priority, done, pageable);
+    return toDoService.getAllToDos(text, priority, done, pageable);  // Pass filters to service
 }
+
 
 @GetMapping("/metrics")
     public AverageCompletionTimeMetrics getAverageCompletionTimeMetrics() {
