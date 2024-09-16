@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 public class ToDo {
@@ -23,14 +24,14 @@ public class ToDo {
     @Column(nullable = false)
     private Boolean done = false;
 
-    private LocalDate doneDate;
+    
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Priority priority;
 
-    @Column(nullable = false, updatable = false)
-    private LocalDate creationDate = LocalDate.now();
+    private LocalDateTime creationDate;  // Use LocalDateTime
+    private LocalDateTime doneDate;      // Use LocalDateTime
 
     // Getters and Setters
     public Long getId() {
@@ -65,13 +66,7 @@ public class ToDo {
         this.done = done;
     }
 
-    public LocalDate getDoneDate() {
-        return doneDate;
-    }
-
-    public void setDoneDate(LocalDate doneDate) {
-        this.doneDate = doneDate;
-    }
+   
 
     public Priority getPriority() {
         return priority;
@@ -81,12 +76,20 @@ public class ToDo {
         this.priority = priority;
     }
 
-    public LocalDate getCreationDate() {
+    public LocalDateTime getCreationDate() {
         return creationDate;
     }
 
-    public void setCreationDate(LocalDate creationDate) {
+    public void setCreationDate(LocalDateTime creationDate) {
         this.creationDate = creationDate;
+    }
+
+    public LocalDateTime getDoneDate() {
+        return doneDate;
+    }
+
+    public void setDoneDate(LocalDateTime doneDate) {
+        this.doneDate = doneDate;
     }
 
     // Priority Enum

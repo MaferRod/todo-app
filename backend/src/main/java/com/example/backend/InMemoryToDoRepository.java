@@ -26,6 +26,10 @@ public class InMemoryToDoRepository implements ToDoRepository {
         int end = Math.min(start + pageable.getPageSize(), todos.size());
         return new PageImpl<>(todos.subList(start, end), pageable, todos.size());
     }
+    @Override
+    public List<ToDo> findAll() {
+        return new ArrayList<>(todoMap.values()); // Return all ToDo items
+    }
 
     @Override
     public Optional<ToDo> findById(Long id) {

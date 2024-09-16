@@ -2,6 +2,8 @@ package com.example.backend;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 import java.util.Optional;
 
 public interface ToDoRepository {
@@ -22,4 +24,6 @@ public interface ToDoRepository {
     long count();
 
     boolean existsById(Long id);
+    List<ToDo> findAll(); // <-- Add this line
+    
 }

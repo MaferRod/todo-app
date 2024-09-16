@@ -33,7 +33,10 @@ public Page<ToDo> getAllToDos(
     return toDoService.getAllToDos(text, priority, done, pageable);
 }
 
-
+@GetMapping("/metrics")
+    public AverageCompletionTimeMetrics getAverageCompletionTimeMetrics() {
+        return toDoService.calculateAverageCompletionTime();
+    }
     @GetMapping("/{id}")
     public Optional<ToDo> getToDoById(@PathVariable Long id) {
         return toDoService.getToDoById(id);

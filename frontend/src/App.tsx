@@ -3,7 +3,6 @@ import ToDoTable from './components/ToDoTable';
 import NewToDoModal from './components/NewToDoModal';
 import ToDoFilter from './components/ToDoFilter'; // Import the filter component
 import { ToDo } from './types/types';
-import { getTodos } from './api/api';
 import axios from 'axios'; // Ensure axios is imported
 import './App.css';
 
@@ -11,22 +10,31 @@ const App: React.FC = () => {
     const [todos, setTodos] = useState<ToDo[]>([]);
     const [isModalOpen, setModalOpen] = useState(false);
     const [filters, setFilters] = useState({ text: '', priority: '', done: '' });
+    const [metrics, setMetrics] = useState<any>(null);
 
+    // Fetch todos and metrics whenever filters or todos are updated
     useEffect(() => {
-        fetchTodos(filters);
-    }, [filters]);
+        fetchTodos();
+        fetchMetrics();  // Fetch metrics when component mounts
+    }, []);
 
-    const fetchTodos = (filters: { text: string; priority: string; done: string }) => {
-        // Example API request
-        axios
-            .get('http://localhost:9090/todos', { params: filters })
-            .then((response: { data: { content: React.SetStateAction<ToDo[]> } }) => {
-                if (response.data.content) {
-                    setTodos(response.data.content); // Assuming response.data.content contains the todo list
-                }
+    const fetchTodos = () => {
+        axios.get('http://localhost:9090/todos')
+            .then(response => {
+                setTodos(response.data.content || []);
             })
-            .catch((error: any) => {
-                console.error('Error fetching filtered todos: ', error);
+            .catch(error => {
+                console.error('Error fetching todos:', error);
+            });
+    };
+
+    const fetchMetrics = () => {
+        axios.get('http://localhost:9090/todos/metrics')
+            .then(response => {
+                setMetrics(response.data);  // Set the metrics data
+            })
+            .catch(error => {
+                console.error('Error fetching metrics:', error);
             });
     };
 
@@ -64,6 +72,22 @@ const App: React.FC = () => {
                 onUpdate={handleUpdateToDo}
                 onDelete={handleDeleteToDo}
             />
+            <div className="metrics">
+    {metrics ? (
+        <>
+            <p>Average time to finish tasks: {metrics.overallAverage}</p>
+            <p>Average time by priority:</p>
+            <ul>
+                <li>Low: {metrics.lowPriorityAverage}</li>
+                <li>Medium: {metrics.mediumPriorityAverage}</li>
+                <li>High: {metrics.highPriorityAverage}</li>
+            </ul>
+        </>
+    ) : (
+        <p>Loading metrics...</p>
+    )}
+</div>
+
         </div>
     );
 };

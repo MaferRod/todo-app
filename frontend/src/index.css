@@ -11,3 +11,18 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+.metrics {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+}
+
+.metrics ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.metrics ul li {
+  margin-bottom: 5px;
+}
