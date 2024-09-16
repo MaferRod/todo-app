@@ -18,24 +18,21 @@ public class ToDoController {
     private ToDoService toDoService;
 
     @GetMapping
-    public Page<ToDo> getAllToDos(
-        @RequestParam(required = false) String text,
-        @RequestParam(required = false) ToDo.Priority priority,
-        @RequestParam(required = false) Boolean done,
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(required = false) String sortBy,
-        @RequestParam(required = false) String order
-    ) {
-        Pageable pageable;
-        if (sortBy != null && order != null) {
-            Sort.Direction direction = order.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
-            pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
-        } else {
-            pageable = PageRequest.of(page, size);
-        }
-        return toDoService.getAllToDos(text, priority, done, pageable);
-    }
+public Page<ToDo> getAllToDos(
+    @RequestParam(required = false) String text,
+    @RequestParam(required = false) ToDo.Priority priority,
+    @RequestParam(required = false) Boolean done,
+    @RequestParam(defaultValue = "0") int page,
+    @RequestParam(defaultValue = "10") int size,
+    @RequestParam(required = false) String sortBy,
+    @RequestParam(required = false) String order
+) {
+    Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(order != null ? order : "asc"), sortBy != null ? sortBy : "id"));
+
+    // Fetch the filtered todos using the service
+    return toDoService.getAllToDos(text, priority, done, pageable);
+}
+
 
     @GetMapping("/{id}")
     public Optional<ToDo> getToDoById(@PathVariable Long id) {

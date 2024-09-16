@@ -4,6 +4,7 @@ import NewToDoModal from './components/NewToDoModal';
 import ToDoFilter from './components/ToDoFilter'; // Import the filter component
 import { ToDo } from './types/types';
 import { getTodos } from './api/api';
+import axios from 'axios'; // Ensure axios is imported
 import './App.css';
 
 const App: React.FC = () => {
@@ -15,21 +16,17 @@ const App: React.FC = () => {
         fetchTodos(filters);
     }, [filters]);
 
-    const fetchTodos = (filters: { text?: string; priority?: string; done?: string }) => {
-        const params: any = {};
-
-        if (filters.text) params.text = filters.text;
-        if (filters.priority) params.priority = filters.priority;
-        if (filters.done) params.done = filters.done === 'true';
-
-        getTodos(params)
-            .then((response) => {
-                if (Array.isArray(response.data)) {
-                    setTodos(response.data);
+    const fetchTodos = (filters: { text: string; priority: string; done: string }) => {
+        // Example API request
+        axios
+            .get('http://localhost:9090/todos', { params: filters })
+            .then((response: { data: { content: React.SetStateAction<ToDo[]> } }) => {
+                if (response.data.content) {
+                    setTodos(response.data.content); // Assuming response.data.content contains the todo list
                 }
             })
-            .catch((error) => {
-                console.error('Error fetching todos:', error);
+            .catch((error: any) => {
+                console.error('Error fetching filtered todos: ', error);
             });
     };
 
@@ -48,7 +45,7 @@ const App: React.FC = () => {
     };
 
     const handleFilterChange = (newFilters: { text: string; priority: string; done: string }) => {
-        setFilters(newFilters);
+        setFilters(newFilters); // Apply filters and trigger fetch
     };
 
     return (
