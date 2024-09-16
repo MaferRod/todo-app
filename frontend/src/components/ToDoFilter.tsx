@@ -1,27 +1,23 @@
 import React, { useState } from 'react';
 
-const ToDoFilter: React.FC<{ onFilter: (filters: any) => void }> = ({ onFilter }) => {
+interface ToDoFilterProps {
+    onFilterChange: (filters: { text: string; priority: string; done: string }) => void;
+}
+
+const ToDoFilter: React.FC<ToDoFilterProps> = ({ onFilterChange }) => {
     const [text, setText] = useState('');
     const [priority, setPriority] = useState('');
-    const [done, setDone] = useState<boolean | undefined>(undefined);
+    const [done, setDone] = useState('');
 
     const handleSearch = () => {
-        const filters = {
-            text,
-            priority: priority !== '' ? priority : undefined,
-            done: done !== undefined ? (done ? 'done' : 'undone') : undefined,
-        };
-        console.log('Filters applied:', filters); // Log the applied filters
-        onFilter(filters);
+        onFilterChange({ text, priority, done });
     };
-    
-    
 
     return (
         <div>
             <input
                 type="text"
-                placeholder="Search by text"
+                placeholder="Search by task name"
                 value={text}
                 onChange={(e) => setText(e.target.value)}
             />
@@ -31,16 +27,10 @@ const ToDoFilter: React.FC<{ onFilter: (filters: any) => void }> = ({ onFilter }
                 <option value="MEDIUM">Medium</option>
                 <option value="LOW">Low</option>
             </select>
-            <select 
-                value={done === undefined ? '' : done ? 'done' : 'undone'}
-                onChange={(e) => {
-                    const value = e.target.value;
-                    setDone(value === '' ? undefined : value === 'done');
-                }}
-            >
+            <select value={done} onChange={(e) => setDone(e.target.value)}>
                 <option value="">All statuses</option>
-                <option value="done">Done</option>
-                <option value="undone">Undone</option>
+                <option value="true">Done</option>
+                <option value="false">Undone</option>
             </select>
             <button onClick={handleSearch}>Search</button>
         </div>

@@ -4,9 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.Optional;
 
 @CrossOrigin(origins = "http://localhost:8080")
@@ -18,18 +18,24 @@ public class ToDoController {
     private ToDoService toDoService;
 
     @GetMapping
-public Page<ToDo> getAllToDos(
-    @RequestParam(defaultValue = "0") int page,
-    @RequestParam(defaultValue = "10") int size,
-    @RequestParam(required = false) String text,
-    @RequestParam(required = false) ToDo.Priority priority,
-    @RequestParam(required = false) Boolean done
-) {
-    Pageable pageable = PageRequest.of(page, size);
-    return toDoService.getAllToDos(text, priority, done, pageable);
-}
-
-
+    public Page<ToDo> getAllToDos(
+        @RequestParam(required = false) String text,
+        @RequestParam(required = false) ToDo.Priority priority,
+        @RequestParam(required = false) Boolean done,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String sortBy,
+        @RequestParam(required = false) String order
+    ) {
+        Pageable pageable;
+        if (sortBy != null && order != null) {
+            Sort.Direction direction = order.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+            pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        } else {
+            pageable = PageRequest.of(page, size);
+        }
+        return toDoService.getAllToDos(text, priority, done, pageable);
+    }
 
     @GetMapping("/{id}")
     public Optional<ToDo> getToDoById(@PathVariable Long id) {
@@ -48,10 +54,10 @@ public Page<ToDo> getAllToDos(
     }
 
     @DeleteMapping("/{id}")
-public ResponseEntity<Void> deleteToDoById(@PathVariable Long id) {
-    toDoService.deleteToDoById(id);
-    return ResponseEntity.noContent().build(); // Return 204 No Content
-}
+    public ResponseEntity<Void> deleteToDoById(@PathVariable Long id) {
+        toDoService.deleteToDoById(id);
+        return ResponseEntity.noContent().build(); // Return 204 No Content
+    }
 
     @PostMapping("/{id}/done")
     public ToDo markAsDone(@PathVariable Long id) {

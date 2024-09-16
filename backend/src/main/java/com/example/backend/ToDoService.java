@@ -15,16 +15,17 @@ public class ToDoService {
     private ToDoRepository toDoRepository;
 
     public Page<ToDo> getAllToDos(String text, ToDo.Priority priority, Boolean done, Pageable pageable) {
-    if (text != null && !text.isEmpty()) {
-        return toDoRepository.findByTextContainingIgnoreCase(text, pageable);
-    } else if (priority != null) {
-        return toDoRepository.findByPriority(priority, pageable);
-    } else if (done != null) {
-        return toDoRepository.findByDone(done, pageable);
-    } else {
-        return toDoRepository.findAll(pageable);
+        if (text != null && !text.isEmpty()) {
+            return toDoRepository.findByTextContainingIgnoreCase(text, pageable);
+        } else if (priority != null) {
+            return toDoRepository.findByPriority(priority, pageable);
+        } else if (done != null) {
+            return toDoRepository.findByDone(done, pageable);
+        } else {
+            return toDoRepository.findAll(pageable);
+        }
     }
-}
+    
 
 
     // Get a specific ToDo by id

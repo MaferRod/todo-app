@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ToDo } from '../types/types';
 import EditToDoModal from './EditToDoModal';
 import { markAsDone, markAsUndone } from '../api/api';
@@ -10,8 +10,20 @@ interface ToDoTableProps {
 }
 
 const ToDoTable: React.FC<ToDoTableProps> = ({ todos, onUpdate, onDelete }) => {
-    const [selectedTodo, setSelectedTodo] = React.useState<ToDo | null>(null);
-    const [isEditModalOpen, setEditModalOpen] = React.useState(false);
+    const [selectedTodo, setSelectedTodo] = useState<ToDo | null>(null);
+    const [isEditModalOpen, setEditModalOpen] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
+    // Calculate total pages based on todos length
+    const totalPages = Math.ceil(todos.length / itemsPerPage);
+
+    // Calculate visible todos for the current page
+    const visibleTodos = todos.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
 
     const handleCheckboxChange = (todo: ToDo) => {
         if (todo.done) {
@@ -76,7 +88,7 @@ const ToDoTable: React.FC<ToDoTableProps> = ({ todos, onUpdate, onDelete }) => {
                     </tr>
                 </thead>
                 <tbody>
-                    {todos.map((todo) => (
+                    {visibleTodos.map((todo) => (
                         <tr key={todo.id} style={getRowStyle(todo.dueDate, todo.done)}>
                             <td>
                                 <input
@@ -97,6 +109,25 @@ const ToDoTable: React.FC<ToDoTableProps> = ({ todos, onUpdate, onDelete }) => {
                     ))}
                 </tbody>
             </table>
+
+            {/* Pagination Controls */}
+            <div className="pagination">
+                <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
+                    Previous
+                </button>
+                {Array.from({ length: totalPages }, (_, index) => (
+                    <button
+                        key={index + 1}
+                        onClick={() => handlePageChange(index + 1)}
+                        className={currentPage === index + 1 ? 'active' : ''}
+                    >
+                        {index + 1}
+                    </button>
+                ))}
+                <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
+                    Next
+                </button>
+            </div>
 
             {isEditModalOpen && selectedTodo && (
                 <EditToDoModal
