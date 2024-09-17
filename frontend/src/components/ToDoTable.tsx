@@ -4,12 +4,14 @@ import EditToDoModal from './EditToDoModal';
 import { markAsDone, markAsUndone } from '../api/api';
 
 interface ToDoTableProps {
-    todos: ToDo[];
-    onUpdate: (updatedToDo: ToDo) => void;
-    onDelete: (deletedToDoId: number) => void;
+    todos: ToDo[];  // List of todos passed in
+    onUpdate: (updatedToDo: ToDo) => void;  // Update handler for todos
+    onDelete: (deletedToDoId: number) => void;  // Delete handler for todos
+    Sorting: (sortBy: string) => void;  // Sorting handler
+    currentSort: { sortBy: string; order: string }[];  // Current sort state
 }
 
-const ToDoTable: React.FC<ToDoTableProps> = ({ todos, onUpdate, onDelete }) => {
+const ToDoTable: React.FC<ToDoTableProps> = ({ todos, onUpdate, onDelete, Sorting, currentSort }) => {
     const [selectedTodo, setSelectedTodo] = useState<ToDo | null>(null);
     const [isEditModalOpen, setEditModalOpen] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
@@ -46,14 +48,16 @@ const ToDoTable: React.FC<ToDoTableProps> = ({ todos, onUpdate, onDelete }) => {
         onDelete(id);
     };
 
+    const handleSortClick = (sortBy: string) => {
+        Sorting(sortBy);  // Call the sorting function passed from App.tsx
+    };
+
     const handleUpdateToDo = (updatedToDo: ToDo) => {
         onUpdate(updatedToDo);
     };
 
-    // Function to calculate background color based on due date
     const getRowStyle = (dueDate: string | undefined, done: boolean) => {
         if (done) return { textDecoration: 'line-through' }; // Strikethrough for done tasks
-
         if (!dueDate) return {}; // No background color if no due date
 
         const currentDate = new Date();
@@ -61,13 +65,9 @@ const ToDoTable: React.FC<ToDoTableProps> = ({ todos, onUpdate, onDelete }) => {
         const timeDiff = due.getTime() - currentDate.getTime();
         const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)); // Convert milliseconds to days
 
-        if (daysDiff <= 7) {
-            return { backgroundColor: 'red', color: 'white' };
-        } else if (daysDiff <= 14) {
-            return { backgroundColor: 'yellow', color: 'black' };
-        } else {
-            return { backgroundColor: 'green', color: 'white' };
-        }
+        if (daysDiff <= 7) return { backgroundColor: 'red', color: 'white' };
+        if (daysDiff <= 14) return { backgroundColor: 'yellow', color: 'black' };
+        return { backgroundColor: 'green', color: 'white' };
     };
 
     if (todos.length === 0) {
@@ -81,7 +81,12 @@ const ToDoTable: React.FC<ToDoTableProps> = ({ todos, onUpdate, onDelete }) => {
                     <tr>
                         <th></th> {/* Checkbox column */}
                         <th>Task</th>
-                        <th>Priority</th>
+                        <th>
+                            Priority
+                            <button onClick={() => handleSortClick('priority')}>
+                                Sort {currentSort[0]?.sortBy === 'priority' && (currentSort[0].order === 'asc' ? '↑' : '↓')}
+                            </button>
+                        </th>
                         <th>Due Date</th>
                         <th>Status</th>
                         <th>Actions</th>

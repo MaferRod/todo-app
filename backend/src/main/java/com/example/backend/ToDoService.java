@@ -6,7 +6,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -177,6 +176,15 @@ public ToDo markAsUndone(Long id) {
         String lowPriorityAverage = lowPriorityCount > 0 ? formatDuration(lowPriorityTotalSeconds / lowPriorityCount) : "0 seconds";
     
         return new AverageCompletionTimeMetrics(overallAverage, highPriorityAverage, mediumPriorityAverage, lowPriorityAverage);
+    }
+
+
+
+
+
+    public List<ToDo> customSort(List<ToDo> todos, String string, String string2, Object object, Object object2) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'customSort'");
     }
     
 

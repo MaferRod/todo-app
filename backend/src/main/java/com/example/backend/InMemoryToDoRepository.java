@@ -109,6 +109,7 @@ public Page<ToDo> findByTextAndDone(String text, Boolean done, Pageable pageable
         return new PageImpl<>(filteredTodos.subList(start, end), pageable, filteredTodos.size());
     }
 
+
     @Override
     public boolean existsById(Long id) {
         return todoMap.containsKey(id);
