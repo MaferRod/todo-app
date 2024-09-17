@@ -3,13 +3,14 @@ import { ToDo } from '../types/types';
 import EditToDoModal from './EditToDoModal';
 import { markAsDone, markAsUndone } from '../api/api';
 
+
 interface ToDoTableProps {
     todos: ToDo[];
     onUpdate: (updatedToDo: ToDo) => void;
     onDelete: (deletedToDoId: number) => void;
     onPrioritySort: () => void;
     onDueDateSort: () => void;
-    fetchMetrics: () => void;
+    fetchMetrics: () => void; // Function to update metrics
     currentSort: {
         sortByPriority: { sortBy: string; order: string };
         sortByDueDate: { sortBy: string; order: string };
@@ -22,7 +23,7 @@ const ToDoTable: React.FC<ToDoTableProps> = ({
     onDelete,
     onPrioritySort,
     onDueDateSort,
-    fetchMetrics, // <-- Use this function to update metrics
+    fetchMetrics,
     currentSort,
 }) => {
     const [selectedTodo, setSelectedTodo] = useState<ToDo | null>(null);
@@ -44,15 +45,17 @@ const ToDoTable: React.FC<ToDoTableProps> = ({
         if (todo.done) {
             markAsUndone(todo.id!)
                 .then((response) => {
-                    onUpdate(response.data);
-                    fetchMetrics(); // <-- Fetch metrics after the task is marked as undone
+                    const updatedToDo = response.data;
+                    onUpdate(updatedToDo);
+                    fetchMetrics(); // Recalculate metrics after marking undone
                 })
                 .catch((error) => console.error('Error marking undone:', error));
         } else {
             markAsDone(todo.id!)
                 .then((response) => {
-                    onUpdate(response.data);
-                    fetchMetrics(); // <-- Fetch metrics after the task is marked as done
+                    const updatedToDo = response.data;
+                    onUpdate(updatedToDo);
+                    fetchMetrics(); // Recalculate metrics after marking done
                 })
                 .catch((error) => console.error('Error marking done:', error));
         }
@@ -72,18 +75,20 @@ const ToDoTable: React.FC<ToDoTableProps> = ({
         onUpdate(updatedToDo);
     };
 
-    const getRowStyle = (dueDate: string | undefined, done: boolean) => {
+    const getRowStyle = (dueDate: string | undefined, doneDate: string | undefined, done: boolean) => {
+        const dateToCheck = done ? doneDate : dueDate;
+
         if (done) return { textDecoration: 'line-through' }; // Strikethrough for done tasks
-        if (!dueDate) return {}; // No background color if no due date
+        if (!dateToCheck) return {}; // No background color if no due or done date
 
         const currentDate = new Date();
-        const due = new Date(dueDate);
-        const timeDiff = due.getTime() - currentDate.getTime();
+        const checkDate = new Date(dateToCheck);
+        const timeDiff = checkDate.getTime() - currentDate.getTime();
         const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)); // Convert milliseconds to days
 
-        if (daysDiff <= 7) return { backgroundColor: 'red', color: 'white' };
-        if (daysDiff <= 14) return { backgroundColor: 'yellow', color: 'black' };
-        return { backgroundColor: 'green', color: 'white' };
+        if (daysDiff <= 7) return { backgroundColor: '#F9635C', color: 'white' };
+        if (daysDiff <= 14) return { backgroundColor: '#FAFF80', color: 'black' };
+        return { backgroundColor: '#5DC460', color: 'white' };
     };
 
     if (todos.length === 0) {
@@ -99,14 +104,14 @@ const ToDoTable: React.FC<ToDoTableProps> = ({
                         <th>Task</th>
                         <th>
                             Priority
-                            <button onClick={onPrioritySort}>
-                                Sort {currentSort.sortByPriority.order === 'asc' ? '↑' : '↓'}
+                            <button className="Sort" onClick={onPrioritySort}>
+                             {currentSort.sortByPriority.order === 'asc' ? '↑' : '↓'}
                             </button>
                         </th>
                         <th>
-                            Due Date
-                            <button onClick={onDueDateSort}>
-                                Sort {currentSort.sortByDueDate.order === 'asc' ? '↑' : '↓'}
+                            Due Date / Done Date
+                            <button className="Sort" onClick={onDueDateSort}>
+                                {currentSort.sortByDueDate.order === 'asc' ? '↑' : '↓'}
                             </button>
                         </th>
                         <th>Status</th>
@@ -115,7 +120,7 @@ const ToDoTable: React.FC<ToDoTableProps> = ({
                 </thead>
                 <tbody>
                     {visibleTodos.map((todo) => (
-                        <tr key={todo.id} style={getRowStyle(todo.dueDate, todo.done)}>
+                        <tr key={todo.id} style={getRowStyle(todo.dueDate, todo.doneDate, todo.done)}>
                             <td>
                                 <input
                                     type="checkbox"
@@ -125,7 +130,7 @@ const ToDoTable: React.FC<ToDoTableProps> = ({
                             </td>
                             <td>{todo.text}</td>
                             <td>{todo.priority}</td>
-                            <td>{todo.dueDate || '-'}</td>
+                            <td>{todo.done ? todo.doneDate : todo.dueDate || '-'}</td>
                             <td>{todo.done ? 'Done' : 'Undone'}</td>
                             <td>
                                 <button onClick={() => handleEditClick(todo)}>Edit</button>

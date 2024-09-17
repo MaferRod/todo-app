@@ -127,12 +127,12 @@ const App: React.FC = () => {
             <div className="metrics">
                 {metrics ? (
                     <>
-                        <p>Average time to finish tasks: {metrics.overallAverage} minutes</p>
+                        <p>Average time to finish tasks: {metrics.overallAverage}</p>
                         <p>Average time by priority:</p>
                         <ul>
-                            <li>Low: {metrics.lowPriorityAverage} minutes</li>
-                            <li>Medium: {metrics.mediumPriorityAverage} minutes</li>
-                            <li>High: {metrics.highPriorityAverage} minutes</li>
+                            <li>Low: {metrics.lowPriorityAverage}</li>
+                            <li>Medium: {metrics.mediumPriorityAverage}</li>
+                            <li>High: {metrics.highPriorityAverage}</li>
                         </ul>
                     </>
                 ) : (

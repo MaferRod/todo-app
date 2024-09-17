@@ -18,6 +18,18 @@ h1 {
 }
 
 /* Button styling */
+.Sort {
+  background-color: transparent;
+  color: black;
+  border: none;
+  padding: 8px 16px;
+  margin: 5px;
+  cursor: pointer;
+}
+.Sort:hover
+{
+  background-color: transparent;
+}
 button {
   background-color: #4CAF50;
   color: white;

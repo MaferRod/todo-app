@@ -116,21 +116,21 @@ public class ToDoService {
 // Mark a task as undone
 public ToDo markAsUndone(Long id) {
     Optional<ToDo> optionalToDo = toDoRepository.findById(id);
-
     if (optionalToDo.isPresent()) {
         ToDo toDo = optionalToDo.get();
         if (toDo.getDone()) {
-            toDo.setDone(false); // Mark as undone
-            toDo.setDoneDate(null); // Clear done date
-            System.out.println("Task marked as undone: " + toDo.getId());
+            toDo.setDone(false);    // Mark the task as undone
+            toDo.setDoneDate(null); // Clear the done date completely
+            toDo.setCreationDate(LocalDateTime.now()); // Reset the creation date to current time
+            System.out.println("Task marked as undone, creation date reset: " + toDo.getId());
             return toDoRepository.save(toDo);
         }
-        System.out.println("Task was already marked as undone: " + toDo.getId());
-        return toDo; // Already undone
+        return toDo;
     } else {
-        throw new ToDoNotFoundException(id); // Throw exception if not found
+        throw new ToDoNotFoundException(id);
     }
 }
+
 
     
 
@@ -174,6 +174,7 @@ public ToDo markAsUndone(Long id) {
         int lowPriorityCount = 0;
     
         for (ToDo toDo : allToDos) {
+            // Only count the completed tasks (tasks with both creationDate and doneDate)
             if (toDo.getDone() && toDo.getCreationDate() != null && toDo.getDoneDate() != null) {
                 Duration duration = Duration.between(toDo.getCreationDate(), toDo.getDoneDate());
                 long seconds = duration.getSeconds();
@@ -198,6 +199,7 @@ public ToDo markAsUndone(Long id) {
             }
         }
     
+        // Format the overall average time
         String overallAverage = totalCompleted > 0 ? formatDuration(totalSeconds / totalCompleted) : "0 seconds";
         String highPriorityAverage = highPriorityCount > 0 ? formatDuration(highPriorityTotalSeconds / highPriorityCount) : "0 seconds";
         String mediumPriorityAverage = mediumPriorityCount > 0 ? formatDuration(mediumPriorityTotalSeconds / mediumPriorityCount) : "0 seconds";
@@ -205,10 +207,8 @@ public ToDo markAsUndone(Long id) {
     
         return new AverageCompletionTimeMetrics(overallAverage, highPriorityAverage, mediumPriorityAverage, lowPriorityAverage);
     }
-
-
-
-
+    
+    
 
     public List<ToDo> customSort(List<ToDo> todos, String string, String string2, Object object, Object object2) {
         // TODO Auto-generated method stub
