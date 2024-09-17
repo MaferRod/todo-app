@@ -6,10 +6,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 public class ToDoService {
@@ -18,6 +21,7 @@ public class ToDoService {
     private ToDoRepository toDoRepository;
 
     public Page<ToDo> getAllToDos(String text, ToDo.Priority priority, Boolean done, Pageable pageable) {
+        // Existing logic for fetching todos
         if (text != null && !text.isEmpty() && priority != null && done != null) {
             return toDoRepository.findByTextAndPriorityAndDone(text, priority, done, pageable);
         } else if (priority != null && done != null) {
@@ -38,8 +42,32 @@ public class ToDoService {
     }
     
     
+    public List<ToDo> customSortByPriority(List<ToDo> todos, String order) {
+        Comparator<ToDo> comparator = Comparator.comparing(
+            toDo -> toDo.getPriority() == ToDo.Priority.HIGH ? 1 :
+                    toDo.getPriority() == ToDo.Priority.MEDIUM ? 2 : 3
+        );
+    
+        if ("desc".equalsIgnoreCase(order)) {
+            comparator = comparator.reversed();
+        }
+    
+        return todos.stream().sorted(comparator).collect(Collectors.toList());
+    }
     
 
+    public List<ToDo> customSortByDueDate(List<ToDo> todos, String order) {
+        Comparator<ToDo> comparator = Comparator.comparing(
+            toDo -> toDo.getDueDate() != null ? toDo.getDueDate() : LocalDate.MAX
+        );
+    
+        if ("desc".equalsIgnoreCase(order)) {
+            comparator = comparator.reversed();
+        }
+    
+        return todos.stream().sorted(comparator).collect(Collectors.toList());
+    }
+    
 
     // Get a specific ToDo by id
     public Optional<ToDo> getToDoById(Long id) {

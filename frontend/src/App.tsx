@@ -11,86 +11,92 @@ const App: React.FC = () => {
     const [isModalOpen, setModalOpen] = useState(false);
     const [filters, setFilters] = useState({ text: '', priority: '', done: '' });
     const [metrics, setMetrics] = useState<any>(null);
-    const [sort, setSort] = useState<{ sortBy: string; order: string }[]>([
-        { sortBy: 'priority', order: 'asc' },
-    ]);
 
-    // Fetch todos and metrics whenever filters or sort state is updated
+    // Track both priority and due date sorting state
+    const [sortByPriority, setSortByPriority] = useState<{ sortBy: string; order: string }>({
+        sortBy: 'priority',
+        order: 'asc',
+    });
+    const [sortByDueDate, setSortByDueDate] = useState<{ sortBy: string; order: string }>({
+        sortBy: 'dueDate',
+        order: 'asc',
+    });
+
+    // State to keep track of the currently active sort field
+    const [activeSort, setActiveSort] = useState<string>('priority');
+
     useEffect(() => {
         fetchTodos();
         fetchMetrics();
-    }, [filters, sort]);
+    }, [filters, sortByPriority, sortByDueDate, activeSort]);
 
-    // Fetch todos from the backend
-    const fetchTodos = async () => {
-        try {
-            const params = {
-                text: filters.text || '',
-                priority: filters.priority || '',
-                done: filters.done !== '' ? filters.done : '',
-                sortBy: sort.map(s => s.sortBy).join(','),
-                order: sort.map(s => s.order).join(','),
-            };
+    const fetchTodos = () => {
+        const params = {
+            text: filters.text || '',
+            priority: filters.priority || '',
+            done: filters.done !== '' ? filters.done : '',
+            sortBy: activeSort === 'priority' ? sortByPriority.sortBy : sortByDueDate.sortBy,
+            order: activeSort === 'priority' ? sortByPriority.order : sortByDueDate.order,
+        };
 
-            console.log('Requesting todos with params:', params);
+        console.log('Fetching todos with params:', params); // Debugging
 
-            const response = await axios.get('http://localhost:9090/todos', { params });
-
-            console.log('Fetched todos response:', response.data);
-
-            // Directly use response.data since it's an array
-            if (response.data && Array.isArray(response.data)) {
-                setTodos(response.data);  // Update todos state with the array
-            } else {
-                console.log('No todos found');
-                setTodos([]);  // Fallback to an empty list if response is empty
-            }
-        } catch (error) {
-            console.error('Error fetching todos:', error);
-        }
+        axios
+            .get('http://localhost:9090/todos', { params })
+            .then((response) => {
+                setTodos(response.data || []);
+            })
+            .catch((error) => {
+                console.error('Error fetching todos:', error);
+            });
     };
 
-    // Fetch metrics
     const fetchMetrics = () => {
-        axios.get('http://localhost:9090/todos/metrics')
-            .then(response => {
+        axios
+            .get('http://localhost:9090/todos/metrics')
+            .then((response) => {
                 setMetrics(response.data);
             })
-            .catch(error => {
+            .catch((error) => {
                 console.error('Error fetching metrics:', error);
             });
     };
 
-    // Sorting handler
-    const handleSorting = (sortBy: string) => {
-        console.log('Sorting by:', sortBy);
+    // Sort by priority and reset due date sorting
+    const handlePrioritySort = () => {
+        setActiveSort('priority');
+        setSortByPriority((prevSort) => ({
+            sortBy: 'priority',
+            order: prevSort.order === 'asc' ? 'desc' : 'asc',
+        }));
+        setSortByDueDate({ sortBy: 'dueDate', order: 'asc' }); // Reset due date sort
+    };
 
-        setSort(prevSort => {
-            const currentSort = prevSort.find(s => s.sortBy === sortBy);
-            const newOrder = currentSort?.order === 'asc' ? 'desc' : 'asc';
-
-            const newSort = [{ sortBy, order: newOrder }, ...prevSort.filter(s => s.sortBy !== sortBy)];
-            console.log('New sort state:', newSort);
-
-            return newSort;
-        });
+    // Sort by due date and reset priority sorting
+    const handleDueDateSort = () => {
+        setActiveSort('dueDate');
+        setSortByDueDate((prevSort) => ({
+            sortBy: 'dueDate',
+            order: prevSort.order === 'asc' ? 'desc' : 'asc',
+        }));
+        setSortByPriority({ sortBy: 'priority', order: 'asc' }); // Reset priority sort
     };
 
     const handleAddToDo = (newToDo: ToDo) => {
-        setTodos(prevTodos => [...prevTodos, newToDo]);
+        setTodos((prevTodos) => [...prevTodos, newToDo]);
     };
 
     const handleUpdateToDo = (updatedToDo: ToDo) => {
-        console.log('Updating ToDo:', updatedToDo);
-        setTodos(prevTodos => prevTodos.map(todo => (todo.id === updatedToDo.id ? updatedToDo : todo)));
+        setTodos((prevTodos) =>
+            prevTodos.map((todo) => (todo.id === updatedToDo.id ? updatedToDo : todo))
+        );
     };
 
     const handleDeleteToDo = (id: number) => {
-        setTodos(prevTodos => prevTodos.filter(todo => todo.id !== id));
+        setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== id));
     };
 
     const handleFilterChange = (newFilters: { text: string; priority: string; done: string }) => {
-        console.log('Applying filters:', newFilters);
         setFilters(newFilters);
     };
 
@@ -110,8 +116,12 @@ const App: React.FC = () => {
                 todos={todos}
                 onUpdate={handleUpdateToDo}
                 onDelete={handleDeleteToDo}
-                Sorting={handleSorting}
-                currentSort={sort}
+                onPrioritySort={handlePrioritySort}
+                onDueDateSort={handleDueDateSort}
+                currentSort={{
+                    sortByPriority,
+                    sortByDueDate,
+                }}
             />
             <div className="metrics">
                 {metrics ? (

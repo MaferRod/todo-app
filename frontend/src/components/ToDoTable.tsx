@@ -4,14 +4,25 @@ import EditToDoModal from './EditToDoModal';
 import { markAsDone, markAsUndone } from '../api/api';
 
 interface ToDoTableProps {
-    todos: ToDo[];  // List of todos passed in
-    onUpdate: (updatedToDo: ToDo) => void;  // Update handler for todos
-    onDelete: (deletedToDoId: number) => void;  // Delete handler for todos
-    Sorting: (sortBy: string) => void;  // Sorting handler
-    currentSort: { sortBy: string; order: string }[];  // Current sort state
+    todos: ToDo[];
+    onUpdate: (updatedToDo: ToDo) => void;
+    onDelete: (deletedToDoId: number) => void;
+    onPrioritySort: () => void;
+    onDueDateSort: () => void;
+    currentSort: {
+        sortByPriority: { sortBy: string; order: string };
+        sortByDueDate: { sortBy: string; order: string };
+    };
 }
 
-const ToDoTable: React.FC<ToDoTableProps> = ({ todos, onUpdate, onDelete, Sorting, currentSort }) => {
+const ToDoTable: React.FC<ToDoTableProps> = ({
+    todos,
+    onUpdate,
+    onDelete,
+    onPrioritySort,
+    onDueDateSort,
+    currentSort,
+}) => {
     const [selectedTodo, setSelectedTodo] = useState<ToDo | null>(null);
     const [isEditModalOpen, setEditModalOpen] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
@@ -48,10 +59,6 @@ const ToDoTable: React.FC<ToDoTableProps> = ({ todos, onUpdate, onDelete, Sortin
         onDelete(id);
     };
 
-    const handleSortClick = (sortBy: string) => {
-        Sorting(sortBy);  // Call the sorting function passed from App.tsx
-    };
-
     const handleUpdateToDo = (updatedToDo: ToDo) => {
         onUpdate(updatedToDo);
     };
@@ -83,11 +90,16 @@ const ToDoTable: React.FC<ToDoTableProps> = ({ todos, onUpdate, onDelete, Sortin
                         <th>Task</th>
                         <th>
                             Priority
-                            <button onClick={() => handleSortClick('priority')}>
-                                Sort {currentSort[0]?.sortBy === 'priority' && (currentSort[0].order === 'asc' ? '↑' : '↓')}
+                            <button onClick={onPrioritySort}>
+                                Sort {currentSort.sortByPriority.order === 'asc' ? '↑' : '↓'}
                             </button>
                         </th>
-                        <th>Due Date</th>
+                        <th>
+                            Due Date
+                            <button onClick={onDueDateSort}>
+                                Sort {currentSort.sortByDueDate.order === 'asc' ? '↑' : '↓'}
+                            </button>
+                        </th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
