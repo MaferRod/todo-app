@@ -118,6 +118,7 @@ const App: React.FC = () => {
                 onDelete={handleDeleteToDo}
                 onPrioritySort={handlePrioritySort}
                 onDueDateSort={handleDueDateSort}
+                fetchMetrics={fetchMetrics}
                 currentSort={{
                     sortByPriority,
                     sortByDueDate,
