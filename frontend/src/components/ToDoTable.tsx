@@ -10,7 +10,8 @@ interface ToDoTableProps {
     onDelete: (deletedToDoId: number) => void;
     onPrioritySort: () => void;
     onDueDateSort: () => void;
-    fetchMetrics: () => void; // Function to update metrics
+    fetchMetrics: () => void;
+    fetchTodos: () => void;  // Function to update metrics
     currentSort: {
         sortByPriority: { sortBy: string; order: string };
         sortByDueDate: { sortBy: string; order: string };
@@ -24,6 +25,7 @@ const ToDoTable: React.FC<ToDoTableProps> = ({
     onPrioritySort,
     onDueDateSort,
     fetchMetrics,
+    fetchTodos,
     currentSort,
 }) => {
     const [selectedTodo, setSelectedTodo] = useState<ToDo | null>(null);
@@ -47,6 +49,7 @@ const ToDoTable: React.FC<ToDoTableProps> = ({
                 .then((response) => {
                     const updatedToDo = response.data;
                     onUpdate(updatedToDo);
+                    fetchTodos();
                     fetchMetrics(); // Recalculate metrics after marking undone
                 })
                 .catch((error) => console.error('Error marking undone:', error));
@@ -55,6 +58,7 @@ const ToDoTable: React.FC<ToDoTableProps> = ({
                 .then((response) => {
                     const updatedToDo = response.data;
                     onUpdate(updatedToDo);
+                    fetchTodos();
                     fetchMetrics(); // Recalculate metrics after marking done
                 })
                 .catch((error) => console.error('Error marking done:', error));
