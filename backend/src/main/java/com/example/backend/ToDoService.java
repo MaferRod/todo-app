@@ -210,10 +210,7 @@ public ToDo markAsUndone(Long id) {
     
     
 
-    public List<ToDo> customSort(List<ToDo> todos, String string, String string2, Object object, Object object2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'customSort'");
-    }
+    
     
 
 }
