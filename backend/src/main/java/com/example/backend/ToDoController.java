@@ -171,12 +171,14 @@ public List<ToDo> getAllToDos(
     }
 
     @DeleteMapping("/{id}")
-    public void deleteToDoById(@PathVariable Long id) {
-        toDoService.deleteToDoById(id);
-    }
-
+public void deleteToDoById(@PathVariable Long id) {
+    System.out.println("Received request to delete task with id: " + id);
+    toDoService.deleteToDoById(id);
+    System.out.println("Task with id " + id + " has been deleted by the service.");
+}
     @PostMapping("/{id}/done")
     public ToDo markAsDone(@PathVariable Long id) {
+        System.out.println("Controller: Received request to mark task as done with id: " + id);
         return toDoService.markAsDone(id);
     }
 

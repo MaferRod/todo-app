@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 
 interface Metrics {
@@ -11,28 +11,34 @@ interface Metrics {
 const MetricsDisplay: React.FC = () => {
     const [metrics, setMetrics] = useState<Metrics | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        fetchMetrics();
-    }, []);
-
-    const fetchMetrics = async () => {
+    const fetchMetrics = useCallback(async () => {
         try {
             const response = await axios.get('http://localhost:9090/todos/metrics');
             setMetrics(response.data);
             setLoading(false);
         } catch (error) {
             console.error('Error fetching metrics:', error);
+            setError('Failed to load metrics. Please try again later.');
             setLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchMetrics();
+    }, [fetchMetrics]);
 
     if (loading) {
         return <div>Loading metrics...</div>;
     }
 
+    if (error) {
+        return <div>{error}</div>;
+    }
+
     if (!metrics) {
-        return <div>Failed to load metrics.</div>;
+        return <div>No metrics available.</div>;
     }
 
     return (

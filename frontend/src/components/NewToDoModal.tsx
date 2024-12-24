@@ -1,4 +1,3 @@
-// NewToDoModal.tsx
 import React, { useState } from 'react';
 import { ToDo } from '../types/types';
 import { createTodo } from '../api/api';
@@ -9,44 +8,75 @@ interface NewToDoModalProps {
 }
 
 const NewToDoModal: React.FC<NewToDoModalProps> = ({ closeModal, onSave }) => {
-    const [text, setText] = useState('');
-    const [priority, setPriority] = useState<ToDo['priority']>('LOW');
-    const [dueDate, setDueDate] = useState<string>('');
+    const [formData, setFormData] = useState({
+        text: '',
+        priority: 'LOW' as ToDo['priority'],
+        dueDate: '',
+    });
+    const [error, setError] = useState<string | null>(null);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setFormData((prevData) => ({
+            ...prevData,
+            [name]: value,
+        }));
+    };
 
     const handleSave = () => {
         const newToDo = {
-            text,
-            priority,
+            ...formData,
             done: false,
-            dueDate,
         };
 
         createTodo(newToDo)
             .then((response) => {
-                onSave(response.data); // Pass the new todo to the parent
-                closeModal(); // Close the modal
+                onSave(response.data);
+                closeModal();
             })
             .catch((error) => {
                 console.error('Error creating To Do:', error.response ? error.response.data : error.message);
+                setError('Failed to create the ToDo. Please try again.');
             });
     };
 
     return (
-        <div className="modal">
+        <div className="modal" role="dialog" aria-modal="true">
             <div className="modal-content">
                 <h3>New To Do</h3>
-                <label>Text</label>
-                <input type="text" value={text} onChange={(e) => setText(e.target.value)} />
-                <label>Priority</label>
-                <select value={priority} onChange={(e) => setPriority(e.target.value as ToDo['priority'])}>
+                {error && <p className="error">{error}</p>}
+                <label htmlFor="text">Text</label>
+                <input
+                    type="text"
+                    id="text"
+                    name="text"
+                    value={formData.text}
+                    onChange={handleChange}
+                    aria-label="ToDo text"
+                />
+                <label htmlFor="priority">Priority</label>
+                <select
+                    id="priority"
+                    name="priority"
+                    value={formData.priority}
+                    onChange={handleChange}
+                    aria-label="ToDo priority"
+                >
                     <option value="HIGH">High</option>
                     <option value="MEDIUM">Medium</option>
                     <option value="LOW">Low</option>
                 </select>
-                <label>Due Date</label>
-                <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
-                <button onClick={handleSave}>Save</button>
-                <button onClick={closeModal}>Cancel</button>
+                <label htmlFor="dueDate">Due Date</label>
+                <input
+                    type="date"
+                    id="dueDate"
+                    name="dueDate"
+                    value={formData.dueDate}
+                    onChange={handleChange}
+                    aria-label="ToDo due date"
+                />
+                <button onClick={handleSave} aria-label="Save ToDo">Save</button>
+                <button onClick={closeModal} aria-label="Cancel">Cancel</button>
             </div>
         </div>
     );

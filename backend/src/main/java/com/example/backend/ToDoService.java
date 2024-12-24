@@ -41,12 +41,9 @@ public class ToDoService {
         }
     }
     
-    
+    //Sort by Priority
     public List<ToDo> customSortByPriority(List<ToDo> todos, String order) {
-        Comparator<ToDo> comparator = Comparator.comparing(
-            toDo -> toDo.getPriority() == ToDo.Priority.HIGH ? 1 :
-                    toDo.getPriority() == ToDo.Priority.MEDIUM ? 2 : 3
-        );
+        Comparator<ToDo> comparator = Comparator.comparingInt(toDo -> toDo.getPriority().ordinal());
     
         if ("desc".equalsIgnoreCase(order)) {
             comparator = comparator.reversed();
@@ -55,12 +52,13 @@ public class ToDoService {
         return todos.stream().sorted(comparator).collect(Collectors.toList());
     }
     
-
+    //Sort by Due date
     public List<ToDo> customSortByDueDate(List<ToDo> todos, String order) {
-        Comparator<ToDo> comparator = Comparator.comparing(
-            toDo -> toDo.getDueDate() != null ? toDo.getDueDate() : LocalDate.MAX
-        );
+        final LocalDate DEFAULT_DATE = LocalDate.MAX;
     
+        Comparator<ToDo> comparator = Comparator.comparing(
+            toDo -> toDo.getDueDate() != null ? toDo.getDueDate() : DEFAULT_DATE
+        );
         if ("desc".equalsIgnoreCase(order)) {
             comparator = comparator.reversed();
         }
@@ -74,62 +72,59 @@ public class ToDoService {
         return toDoRepository.findById(id);
     }
 
+    //Create or update
     public ToDo createOrUpdateToDo(ToDo toDo) {
     if (toDo.getCreationDate() == null) {
         toDo.setCreationDate(LocalDateTime.now());  // Store both date and time
         System.out.println("Task created on: " + toDo.getCreationDate());
     }
     return toDoRepository.save(toDo);
-}
-
-
-
-    
-    
-    
+    }
 
     // Delete a ToDo by id
     public void deleteToDoById(Long id) {
         if (!toDoRepository.existsById(id)) {
             throw new ToDoNotFoundException(id);
         }
+        System.out.println("Before deletion, tasks: " + toDoRepository.findAll());
         toDoRepository.deleteById(id);
+        System.out.println("Task with id " + id + " has been deleted.");
+        System.out.println("After deletion, tasks: " + toDoRepository.findAll());
     }
 
     public ToDo markAsDone(Long id) {
-        Optional<ToDo> optionalToDo = toDoRepository.findById(id);
+        System.out.println("Received request to mark task as done with id: " + id);
+        ToDo toDo = getToDoById(id).orElseThrow(() -> new ToDoNotFoundException(id));
+        
+        if (!toDo.getDone()) {
+            toDo.setDone(true);
+            toDo.setDoneDate(LocalDateTime.now());
+            System.out.println("Task marked as done on: " + toDo.getDoneDate());
+            ToDo updatedToDo = createOrUpdateToDo(toDo);
+            System.out.println("Updated task: " + updatedToDo);
+            return updatedToDo;
+        }
+        
+        System.out.println("Task was already marked as done.");
+        return toDo;
+    }
+
+    public ToDo markAsUndone(Long id) {
+        Optional<ToDo> optionalToDo = getToDoById(id);
         if (optionalToDo.isPresent()) {
             ToDo toDo = optionalToDo.get();
-            if (!toDo.getDone()) {
-                toDo.setDone(true);
-                toDo.setDoneDate(LocalDateTime.now());  // Store both date and time
-                System.out.println("Task marked as done on: " + toDo.getDoneDate());
-                return toDoRepository.save(toDo);
+            if (toDo.getDone()) {
+                toDo.setDone(false);
+                toDo.setDoneDate(null);
+                toDo.setCreationDate(LocalDateTime.now());
+                System.out.println("Task marked as undone, creation date reset: " + toDo.getId());
+                return createOrUpdateToDo(toDo);
             }
             return toDo;
         } else {
             throw new ToDoNotFoundException(id);
         }
     }
-    
-
-// Mark a task as undone
-public ToDo markAsUndone(Long id) {
-    Optional<ToDo> optionalToDo = toDoRepository.findById(id);
-    if (optionalToDo.isPresent()) {
-        ToDo toDo = optionalToDo.get();
-        if (toDo.getDone()) {
-            toDo.setDone(false);    // Mark the task as undone
-            toDo.setDoneDate(null); // Clear the done date completely
-            toDo.setCreationDate(LocalDateTime.now()); // Reset the creation date to current time
-            System.out.println("Task marked as undone, creation date reset: " + toDo.getId());
-            return toDoRepository.save(toDo);
-        }
-        return toDo;
-    } else {
-        throw new ToDoNotFoundException(id);
-    }
-}
 
 
     

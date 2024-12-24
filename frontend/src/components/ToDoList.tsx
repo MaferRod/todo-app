@@ -8,51 +8,63 @@ interface NewToDoModalProps {
 
 const NewToDoModal: React.FC<NewToDoModalProps> = ({ closeModal }) => {
     const [text, setText] = useState<string>('');
-    const [priority, setPriority] = useState<ToDo["priority"]>('LOW'); // Use uppercase "LOW"
-    const [dueDate, setDueDate] = useState<string>(''); // New state for due date
+    const [priority, setPriority] = useState<ToDo["priority"]>('LOW');
+    const [dueDate, setDueDate] = useState<string>('');
+    const [error, setError] = useState<string | null>(null);
 
     const handleSave = () => {
         const newToDo: Partial<ToDo> = {
             text,
-            priority, // No need to use `toUpperCase()` anymore
+            priority,
             done: false,
-            dueDate, // Add due date to the new ToDo object
+            dueDate,
         };
 
         createTodo(newToDo)
             .then(() => {
-                closeModal(); // Close modal after saving the to-do
+                closeModal();
             })
             .catch(error => {
                 console.error('Error creating To Do:', error.response ? error.response.data : error.message);
+                setError('Failed to create the ToDo. Please try again.');
             });
     };
 
     return (
-        <div className="modal">
+        <div className="modal" role="dialog" aria-modal="true">
             <div className="modal-content">
                 <h2>New To Do</h2>
+                {error && <p className="error">{error}</p>}
+                <label htmlFor="text">Text</label>
                 <input
                     type="text"
+                    id="text"
                     placeholder="To Do Text"
                     value={text}
                     onChange={(e) => setText(e.target.value)}
+                    aria-label="To Do Text"
                 />
-                <select value={priority} onChange={(e) => setPriority(e.target.value as ToDo["priority"])}>
+                <label htmlFor="priority">Priority</label>
+                <select
+                    id="priority"
+                    value={priority}
+                    onChange={(e) => setPriority(e.target.value as ToDo["priority"])}
+                    aria-label="Priority"
+                >
                     <option value="HIGH">High</option>
                     <option value="MEDIUM">Medium</option>
                     <option value="LOW">Low</option>
                 </select>
-
-                {/* Due Date Input */}
+                <label htmlFor="dueDate">Due Date</label>
                 <input
                     type="date"
+                    id="dueDate"
                     value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)} // Capture the due date
+                    onChange={(e) => setDueDate(e.target.value)}
+                    aria-label="Due Date"
                 />
-
-                <button onClick={handleSave}>Save</button>
-                <button onClick={closeModal}>Cancel</button>
+                <button onClick={handleSave} aria-label="Save ToDo">Save</button>
+                <button onClick={closeModal} aria-label="Cancel">Cancel</button>
             </div>
         </div>
     );

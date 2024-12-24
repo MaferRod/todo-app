@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { ToDo } from '../types/types';
 import EditToDoModal from './EditToDoModal';
-import { markAsDone, markAsUndone } from '../api/api';
+import { deleteTodo, markAsDone, markAsUndone } from '../api/api';
 
 
 interface ToDoTableProps {
     todos: ToDo[];
     onUpdate: (updatedToDo: ToDo) => void;
-    onDelete: (deletedToDoId: number) => void;
+    onDelete: (deletedTodo: number) => void;
     onPrioritySort: () => void;
     onDueDateSort: () => void;
     fetchMetrics: () => void;
@@ -72,7 +72,13 @@ const ToDoTable: React.FC<ToDoTableProps> = ({
     };
 
     const handleDeleteClick = (id: number) => {
-        onDelete(id);
+        console.log(`Deleting task with id: ${id}`);
+        deleteTodo(id)
+            .then(() => {
+                console.log(`Task with id ${id} has been deleted.`);
+                onDelete(id); // Update the state to remove the deleted task
+            })
+            .catch(error => console.error('Error deleting task:', error));
     };
 
     const handleUpdateToDo = (updatedToDo: ToDo) => {

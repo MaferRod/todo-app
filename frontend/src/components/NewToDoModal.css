@@ -30,4 +30,16 @@
     margin: 5px;
     padding: 8px 12px;
   }
-  
+  .filter-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.filter-container input,
+.filter-container select,
+.filter-container button {
+    padding: 5px;
+    font-size: 14px;
+}
